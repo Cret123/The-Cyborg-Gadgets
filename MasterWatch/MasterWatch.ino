@@ -3,35 +3,28 @@
 
 U8G2_SSD1306_128X64_ALT0_F_HW_I2C u8g2(U8G2_R0, /* reset=*/ U8X8_PIN_NONE);
 
-const int buttonPins = A0;
+bool button_is_pressed(int btn);
 
 int selectedFunction = 1;
 const int totalFunctions = 4;
 
-const int threshold1 = 600;
-const int threshold2 = 400;
-const int threshold3 = 200;
-const int threshold4 = 10;
+const byte btn1 = 2;
+const byte btn2 = 3;
+const byte btn3 = 4;
+const byte btn4 = 5;
 
 const byte Func1 = 2;
 const byte Func2 = 3;
 const byte Func3 = 4;
 
-unsigned long lastButtonCheck = 0;
-const unsigned long debounceDelay = 100;
-
-bool lastThreshold1State = false;
-bool lastThreshold2State = false;
-bool lastThreshold4State = false;
-bool lastThreshold3State = false;
-
-bool button_is_pressed(int threshold);
-
 int timer = 5000;
 
 void setup()
 {
-    pinMode(buttonPins, INPUT);
+    pinMode(btn1, INPUT_PULLUP);
+    pinMode(btn2, INPUT_PULLUP);
+    pinMode(btn3, INPUT_PULLUP);
+    pinMode(btn4, INPUT_PULLUP);
     pinMode(Func1, OUTPUT);
     pinMode(Func2, OUTPUT);
     pinMode(Func3, OUTPUT);
@@ -62,23 +55,13 @@ void setup()
 }
 
 
-bool button_is_pressed(int threshold)
+bool button_is_pressed(int btn)
 {
-    unsigned long currentTime = millis();
-    static bool lastState = false;
-    bool currentVal = analogRead(buttonPins);
-    bool currentThresholdActive = currentVal >= threshold;
-
-    bool pressed = false;
-
-    if (currentThresholdActive && !lastState && (currentTime - lastButtonCheck > debounceDelay))
-    {
-        pressed = true;
-        lastButtonCheck = currentTime;
+  if (digitalRead(btn) == LOW){
+    delay(50);
+    return true;
     }
-
-    lastState = currentThresholdActive;
-    return pressed;
+  return false;
 }
 
 void watchFuncs(void)
@@ -87,17 +70,41 @@ void watchFuncs(void)
 }
 
 void randomInt() {
-    static int clickCount = 10;
-    static int prevBtn3State = HIGH;
-    static unsigned long lastDebounceTime = 0;
-    const unsigned long debounceDelay = 50;
-    int range = clickCount;
-    int randNumber = random(0, range + 1);
-    for (int i = 0; i < randNumber; i++){
-        digitalWrite(LED_BUILTIN, LOW);
-        delay(250);
-        digitalWrite(LED_BUILTIN, HIGH);
-        delay(250);
+    int range = 10;  // Starting range
+    bool inRandomInt = true;
+    unsigned long lastActionTime = 0;
+    const unsigned long debounceDelay = 100; // Optional, can use your global debounce
+
+    while (inRandomInt) {
+        // Display the current range
+        u8g2.clearBuffer();
+        u8g2.setFont(u8g2_font_t0_11_mf);
+        u8g2.drawStr(10, 20, "Random Int Mode");
+        u8g2.setCursor(10, 40);
+        u8g2.print("Range: 0 - ");
+        u8g2.print(range);
+        u8g2.sendBuffer();
+
+        if (button_is_pressed(btn1)) {
+            range += 1;
+            delay(200); // Simple debounce
+        } else if (button_is_pressed(btn2)) {
+            range += 10;
+            delay(200);
+        } else if (button_is_pressed(btn3)) {
+            int randNumber = random(0, range + 1);
+            // Display the random number
+            u8g2.clearBuffer();
+            u8g2.setFont(u8g2_font_t0_18b_tf);
+            u8g2.setCursor(10, 40);
+            u8g2.print("Rnd: ");
+            u8g2.print(randNumber);
+            u8g2.sendBuffer();
+            delay(1500); // Show the number for a moment
+        } else if (button_is_pressed(btn4)) {
+            inRandomInt = false; // Exit to loop
+        }
+        delay(50); // Loop delay to reduce CPU usage
     }
 }
 
@@ -118,20 +125,20 @@ void loop()
 
   unsigned long currentTime = millis();
 
-  if (button_is_pressed(threshold1))
+  if (button_is_pressed(btn1))
   {
     selectedFunction++;
     if (selectedFunction > totalFunctions) selectedFunction = 1;
   }
 
-  else if (button_is_pressed(threshold2))
+  else if (button_is_pressed(btn2))
   {
     selectedFunction--;
     if (selectedFunction < 1){
       selectedFunction = totalFunctions;
   }
 
-  else if (button_is_pressed(threshold4))
+  else if (button_is_pressed(btn4))
   {
     switch (selectedFunction)
     {
@@ -145,9 +152,11 @@ void loop()
         randomInt;
         break;
       case 4:
-        sleep_mode();
+        //sleep_mode();
+        digitalWrite(LED_BUILTIN, HIGH);
     }
   }
 
   delay(50);
+}
 }
