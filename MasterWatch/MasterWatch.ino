@@ -22,8 +22,6 @@ const byte Func2 = 8;
 const byte Func3 = 9;
 const byte Func4 = 10;
 
-int timer = 5000;
-
 void setup()
 {
     pinMode(btn1, INPUT_PULLUP);
@@ -42,7 +40,7 @@ void setup()
     u8g2.setFont(u8g2_font_t0_18b_tf );
     u8g2.drawStr(50, 32, "10!");
     u8g2.sendBuffer();
-    delay(timer);
+    delay(5000);
 
 }
 
@@ -54,6 +52,43 @@ bool button_is_pressed(int btn)
     return true;
     }
   return false;
+}
+
+void activateFunc(const byte func, int blinkTime=500){
+  bool blink = false;
+  while (true){
+    u8g2.clearBuffer();
+    u8g2.setFont(u8g2_font_tinyunicode_tf);
+    u8g2.drawStr(0, 15, "1. Quick Flash");
+    u8g2.drawStr(0, 20, "2. Always On");
+    u8g2.drawStr(0, 25, "3. Blink");
+    u8g2.drawStr(0, 30, "4. Return");
+    
+    u8g2.setCursor(10, 40);
+    u8g2.print("State: ");
+    u8g2.print(digitalRead(func));
+    
+    u8g2.sendBuffer();
+
+    if (blink)
+      digitalWrite(func, !digitalRead(func));
+      delay(blinkTime);
+
+    if (button_is_pressed(btn1))
+      digitalWrite(func, HIGH);
+    else
+      digitalWrite(func, LOW);
+
+    if (button_is_pressed(btn2))
+      digitalWrite(func, !digitalRead(func));
+
+    else if (button_is_pressed(btn3))
+      blink = !blink;
+
+    else if (button_is_pressed(btn4)){
+      break;
+    }
+  }
 }
 
 void watchFuncs(void)
@@ -93,113 +128,13 @@ void watchFuncs(void)
       switch (selectedPart)
       {
         case 1:
-          while (true){
-            u8g2.clearBuffer();
-            u8g2.setFont(u8g2_font_tinyunicode_tf);
-            u8g2.drawStr(0, 15, "1. Quick Flash");
-            u8g2.drawStr(0, 20, "2. Always On");
-            u8g2.drawStr(0, 25, "3. -");
-            u8g2.drawStr(0, 30, "4. Return");
-            
-            u8g2.setCursor(10, 40);
-            u8g2.print("State: ");
-            u8g2.print(digitalRead(Func1));
-            
-            u8g2.sendBuffer();
-
-            if (button_is_pressed(btn1))
-              digitalWrite(Func1, HIGH);
-            else
-              digitalWrite(Func1, LOW);
-
-            if (button_is_pressed(btn2))
-              digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
-
-            else if (button_is_pressed(btn4)){
-              break;
-            }
-          }
-            
+          activateFunc(Func1);
         case 2:
-          while (true){
-            u8g2.clearBuffer();
-            u8g2.setFont(u8g2_font_tinyunicode_tf);
-            u8g2.drawStr(0, 15, "1. Quick Flash");
-            u8g2.drawStr(0, 20, "2. Always On");
-            u8g2.drawStr(0, 25, "3. -");
-            u8g2.drawStr(0, 30, "4. Return");
-            
-            u8g2.setCursor(10, 40);
-            u8g2.print("State: ");
-            u8g2.print(digitalRead(Func2));
-            
-            u8g2.sendBuffer();
-
-            if (button_is_pressed(btn1))
-              digitalWrite(Func2, HIGH);
-            else
-              digitalWrite(Func2, LOW);
-
-            if (button_is_pressed(btn2))
-              digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
-
-            else if (button_is_pressed(btn4)){
-              break;
-            }
-          }
+          activateFunc(Func2, 1000);
         case 3:
-          while (true){
-            u8g2.clearBuffer();
-            u8g2.drawStr(0, 15, "1. Quick Flash");
-            u8g2.drawStr(0, 20, "2. Always On");
-            u8g2.drawStr(0, 25, "3. -");
-            u8g2.drawStr(0, 30, "4. Return");
-            
-            u8g2.setCursor(10, 40);
-            u8g2.print("State: ");
-            u8g2.print(digitalRead(Func3));
-            
-            u8g2.sendBuffer();
-
-            if (button_is_pressed(btn1))
-              digitalWrite(Func3, HIGH);
-            else
-              digitalWrite(Func3, LOW);
-
-            if (button_is_pressed(btn2))
-              digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
-
-            else if (button_is_pressed(btn4)){
-              break;
-            }
-          }
+          activateFunc(Func3);
         case 4:
-          while (true){
-            u8g2.clearBuffer();
-            u8g2.setFont(u8g2_font_tinyunicode_tf);
-            u8g2.drawStr(0, 15, "1. Quick Flash");
-            u8g2.drawStr(0, 20, "2. Always On");
-            u8g2.drawStr(0, 25, "3. -");
-            u8g2.drawStr(0, 30, "4. Return");
-            
-            u8g2.setCursor(10, 40);
-            u8g2.print("State: ");
-            u8g2.print(digitalRead(Func4));
-            
-            u8g2.sendBuffer();
-
-            if (button_is_pressed(btn1))
-              digitalWrite(Func4, HIGH);
-            else
-              digitalWrite(Func4, LOW);
-
-            if (button_is_pressed(btn2))
-              digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
-
-            else if (button_is_pressed(btn4)){
-              break;
-            }
-          }
+          activateFunc(Func4, 200);
       }
     }
 
