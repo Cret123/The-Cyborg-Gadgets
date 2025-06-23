@@ -6,7 +6,7 @@ int NumAddr = 100;
 void setup() {}
 
 void loop() {
-  EEPROM.write(NameAddr, "Tim");
+  EEPROM.write(NameAddr, "hermonochy");
   EEPROM.write(NumAddr, "10");
   
 }
