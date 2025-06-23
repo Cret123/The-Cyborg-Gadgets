@@ -22,6 +22,8 @@ const byte Func2 = 8;
 const byte Func3 = 9;
 const byte Func4 = 10;
 
+volatile bool wakeup = false;
+
 void setup()
 {
     pinMode(btn1, INPUT_PULLUP);
@@ -53,6 +55,12 @@ bool button_is_pressed(int btn)
     }
   return false;
 }
+
+
+void wakeUp() {
+  wakeup = true;
+}
+
 
 void activateFunc(const byte func, int blinkTime=500){
   bool blink = false;
@@ -220,7 +228,7 @@ double parseFactor(const char* &s, bool &error) {
     while (*s == ' ') s++;
     if (*s == '+') { s++; return parseFactor(s, error); }
     if (*s == '-') { s++; return -parseFactor(s, error); }
-    if (*s == "√") { s++; double val = parseFactor(s, error); return val<0?(error=true,0):sqrt(val); }
+    if (*s == '√') { s++; double val = parseFactor(s, error); return val<0?(error=true,0):sqrt(val); }
     if (*s == '(') {
         s++;
         double val = parsePrimary(s, error);
@@ -348,18 +356,22 @@ void loop()
     switch (selectedFunction)
     {
       case 1:
-        watchFuncs();
-        break;
+        watchFuncs(); break;
       case 2:
-        calculator();
-        break;
+        calculator(); break;
       case 3:
-        randomInt;
-        break;
+        randomInt; break;
       case 4:
-        sleep_mode();
+        wakeup = false;
+        attachInterrupt(digitalPinToInterrupt(btn2), wakeUp, FALLING);
+        sleep_enable();
+        sleep_mode(); 
+        sleep_disable();
+        detachInterrupt(digitalPinToInterrupt(btn2));
+        setup();
+        break;
     }
   }
 
-  delay(50);
+  delay(20);
 }
