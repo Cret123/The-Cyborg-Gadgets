@@ -1,6 +1,4 @@
 #include <U8g2lib.h>
-#include <avr/sleep.h>
-#include <EEPROM.h>
 #include <ctype.h>
 #include <math.h>
 
@@ -13,8 +11,8 @@ int selectedPart = 1;
 const int totalParts = 4;
 
 const byte btn1 = 6;
-const byte btn2 = 3;
-const byte btn3 = 4;
+const byte btn2 = 4;
+const byte btn3 = 3;
 const byte btn4 = 5;
 
 const byte Func1 = 7;
@@ -34,16 +32,23 @@ void setup()
     pinMode(Func2, OUTPUT);
     pinMode(Func3, OUTPUT);
     randomSeed(analogRead(1));
-    set_sleep_mode(SLEEP_MODE_PWR_DOWN);
     u8g2.begin();
     u8g2.clearBuffer();
     u8g2.setFont(u8g2_font_t0_11_mf);
-    u8g2.drawStr(12, 20, ("Welcome to Watch"));
-    u8g2.setFont(u8g2_font_t0_18b_tf );
-    u8g2.drawStr(50, 32, "10!");
+    u8g2.drawStr(15, 40, ("Welcome to ..."));
+    u8g2.setFont(u8g2_font_crox5hb_tf);
+    u8g2.drawStr(5, 30, "Watch 10!");
     u8g2.sendBuffer();
-    delay(5000);
-
+    for(int i=0; i<100; i++){
+      delay(40);
+      digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
+      if (button_is_pressed(btn3)){
+        digitalWrite(Func1, HIGH);  
+      }
+      else if (button_is_pressed(btn2)){
+        digitalWrite(Func3, HIGH);  
+      }
+    }
 }
 
 
@@ -78,52 +83,56 @@ void activateFunc(const byte func, int blinkTime=500){
     
     u8g2.sendBuffer();
 
-    if (blink)
+    if (blink){
       digitalWrite(func, !digitalRead(func));
       delay(blinkTime);
+    }
 
     if (button_is_pressed(btn1))
       digitalWrite(func, HIGH);
     else
       digitalWrite(func, LOW);
 
-    if (button_is_pressed(btn2))
-      digitalWrite(func, !digitalRead(func));
-
+    if (button_is_pressed(btn2)){
+      if (digitalRead(func) == HIGH)
+        digitalWrite(func, HIGH);
+      else 
+        digitalWrite(func, LOW);
+      delay(500);
+    }
     else if (button_is_pressed(btn3))
       blink = !blink;
 
     else if (button_is_pressed(btn4)){
-      break;
+      return;
     }
   }
 }
 
 void watchFuncs(void)
 {
+  delay(50);
   while(true){
     u8g2.clearBuffer();
     u8g2.setFont(u8g2_font_tinyunicode_tf);
     u8g2.drawStr(0, 15, "1. White LED");
     u8g2.drawStr(0, 20, "2. Fan");
-    u8g2.drawStr(0, 25, "3. UV LED");
-    u8g2.drawStr(0, 30, "4. Laser");
+    u8g2.drawStr(0, 25, "3. Laser");
+    u8g2.drawStr(0, 30, "4. UV LED");
     
     u8g2.setCursor(10, 40);
     u8g2.print("Sel: ");
     u8g2.print(selectedPart);
     
     u8g2.sendBuffer();
-
-    unsigned long currentTime = millis();
-
-    if (button_is_pressed(btn1))
+    
+    if (button_is_pressed(btn2))
     {
       selectedPart++;
       if (selectedPart > totalParts) selectedPart = 1;
     }
 
-    else if (button_is_pressed(btn2))
+    else if (button_is_pressed(btn1))
     {
       selectedPart--;
       if (selectedPart < 1) selectedPart = totalParts;
@@ -137,12 +146,16 @@ void watchFuncs(void)
       {
         case 1:
           activateFunc(Func1);
+          continue;
         case 2:
           activateFunc(Func2, 1000);
+          continue;
         case 3:
           activateFunc(Func3);
+          continue;
         case 4:
           activateFunc(Func4, 200);
+          continue;
       }
     }
 
@@ -163,9 +176,36 @@ void calculator(void) {
 
     while (!done) {
         u8g2.clearBuffer();
+
+        // Draw current expression
+        u8g2.setFont(u8g2_font_ncenB08_tr);
         u8g2.drawStr(0, 40, expr);
+
+        // Display "Sel:" label
         u8g2.drawStr(0, 10, "Sel:");
-        u8g2.drawStr(30, 10, options[currentOption]);
+
+        // Draw options with highlight on current selection
+        int startX = 30; // starting x position for options
+        int yPos = 10;   // y position for options
+        int spacing = 20; // space between options
+
+        for (int i = 0; i < numOptions; i++) {
+            int x = startX + i * spacing;
+            if (i == currentOption) {
+                // Highlight selected option
+                u8g2.setDrawColor(0); // Set background to black (inverted)
+                u8g2.drawBox(x - 1, yPos - 8, spacing - 2, 10); // draw background box
+                u8g2.setDrawColor(1); // Set back to normal color
+                u8g2.setFont(u8g2_font_ncenB08_tr);
+                u8g2.drawStr(x, yPos, options[i]);
+            } else {
+                // Normal display
+                u8g2.setFont(u8g2_font_ncenB08_tr);
+                u8g2.drawStr(x, yPos, options[i]);
+            }
+        }
+
+        // Show result if needed
         if (showResult) {
             if (error) {
                 u8g2.drawStr(10, 20, "Error!");
@@ -175,8 +215,10 @@ void calculator(void) {
                 u8g2.print(result, 6);
             }
         }
+
         u8g2.sendBuffer();
 
+        // Button handling
         if (button_is_pressed(btn1)) {
             currentOption = (currentOption + 1) % numOptions;
             delay(200);
@@ -202,6 +244,7 @@ void calculator(void) {
         delay(50);
     }
 }
+
 
 double parsePrimary(const char* &s, bool &error);
 
@@ -299,12 +342,14 @@ void randomInt() {
         u8g2.sendBuffer();
 
         if (button_is_pressed(btn1)) {
-            range ++;
-            delay(200);
-        } else if (button_is_pressed(btn2)) {
             range += 10;
             delay(200);
-        } else if (button_is_pressed(btn3)) {
+        } 
+        else if (button_is_pressed(btn2)) {
+            range--;
+            delay(200);
+        } 
+        else if (button_is_pressed(btn3)) {
             int randNumber = random(0, range + 1);
             u8g2.clearBuffer();
             u8g2.setFont(u8g2_font_t0_18b_tf);
@@ -313,7 +358,8 @@ void randomInt() {
             u8g2.print(randNumber);
             u8g2.sendBuffer();
             delay(3000);
-        } else if (button_is_pressed(btn4)) {
+        } 
+        else if (button_is_pressed(btn4)) {
             inRandomInt = false;
         }
         delay(50);
@@ -323,27 +369,23 @@ void randomInt() {
 void loop()
 {
   u8g2.clearBuffer();
-  u8g2.setFont(u8g2_font_tinyunicode_tf);
-  u8g2.drawStr(0, 15, "1. Watch Funcs");
-  u8g2.drawStr(0, 20, "2. Calculator");
-  u8g2.drawStr(0, 25, "3. Random Int");
-  u8g2.drawStr(0, 30, "4. Turn Off");
-  
-  u8g2.setCursor(10, 40);
-  u8g2.print("Sel: ");
+  u8g2.setFont(u8g2_font_boutique_bitmap_9x9_te);
+  u8g2.drawStr(0, 18, "1. Outputs 2. Maths");
+  u8g2.drawStr(0, 28, "3. Random 4. Blink");
+  u8g2.setFont(u8g2_font_tinyunicode_tr);
+  u8g2.setCursor(10, 38);
+  u8g2.print("Option ");
   u8g2.print(selectedFunction);
-  
+  u8g2.print(" Selected");
   u8g2.sendBuffer();
 
-  unsigned long currentTime = millis();
-
-  if (button_is_pressed(btn1))
+  if (button_is_pressed(btn2))
   {
     selectedFunction++;
     if (selectedFunction > totalFunctions) selectedFunction = 1;
   }
 
-  else if (button_is_pressed(btn2))
+  else if (button_is_pressed(btn1))
   {
     selectedFunction--;
     if (selectedFunction < 1){
@@ -351,7 +393,7 @@ void loop()
     }
   }
 
-  else if (button_is_pressed(btn4))
+  else if (button_is_pressed(btn3))
   {
     switch (selectedFunction)
     {
@@ -360,16 +402,14 @@ void loop()
       case 2:
         calculator(); break;
       case 3:
-        randomInt; break;
+        randomInt(); break;
       case 4:
-        wakeup = false;
-        attachInterrupt(digitalPinToInterrupt(btn2), wakeUp, FALLING);
-        sleep_enable();
-        sleep_mode(); 
-        sleep_disable();
-        detachInterrupt(digitalPinToInterrupt(btn2));
-        setup();
-        break;
+        for (int i = 1000; i <= 1; i--){
+          digitalWrite(LED_BUILTIN, HIGH);
+          delay(1000);
+          digitalWrite(LED_BUILTIN, LOW);
+          delay(1000);
+        }
     }
   }
 
