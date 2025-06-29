@@ -1,8 +1,14 @@
-#include <U8g2lib.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
+#include <Wire.h>
 #include <ctype.h>
 #include <math.h>
 
-U8G2_SSD1306_128X64_ALT0_F_HW_I2C u8g2(U8G2_R0, U8X8_PIN_NONE);
+#define SCREEN_WIDTH 128
+#define SCREEN_HEIGHT 64
+#define OLED_RESET    -1
+
+Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
 int selectedFunction = 1;
 const int totalFunctions = 4;
@@ -22,8 +28,18 @@ const byte Func4 = 10;
 
 volatile bool wakeup = false;
 
-void setup()
-{
+void setup() {
+    display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
+    display.clearDisplay();
+    display.setTextSize(2);
+    display.setTextColor(SSD1306_WHITE);
+    display.setCursor(5, 0);
+    display.println("Wecome to");
+    display.setCursor(10, 35);
+    display.setTextSize(2);
+    display.println("Watch 10!");
+    display.display();
+    
     pinMode(btn1, INPUT_PULLUP);
     pinMode(btn2, INPUT_PULLUP);
     pinMode(btn3, INPUT_PULLUP);
@@ -31,140 +47,128 @@ void setup()
     pinMode(Func1, OUTPUT);
     pinMode(Func2, OUTPUT);
     pinMode(Func3, OUTPUT);
+    pinMode(Func4, OUTPUT);
+    pinMode(LED_BUILTIN, OUTPUT);
     randomSeed(analogRead(1));
-    u8g2.begin();
-    u8g2.clearBuffer();
-    u8g2.setFont(u8g2_font_t0_11_mf);
-    u8g2.drawStr(15, 40, ("Welcome to ..."));
-    u8g2.setFont(u8g2_font_crox5hb_tf);
-    u8g2.drawStr(5, 30, "Watch 10!");
-    u8g2.sendBuffer();
+    
     for(int i=0; i<100; i++){
-      delay(40);
-      digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
-      if (button_is_pressed(btn3)){
-        digitalWrite(Func1, HIGH);  
-      }
-      else if (button_is_pressed(btn2)){
-        digitalWrite(Func3, HIGH);  
-      }
+        delay(50);
+        digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
+        if (button_is_pressed(btn3)){
+            digitalWrite(Func1, HIGH);  
+        }
+        else if (button_is_pressed(btn2)){
+            digitalWrite(Func3, HIGH);
+        }
     }
 }
 
-
-bool button_is_pressed(int btn)
-{
-  if (digitalRead(btn) == LOW){
-    delay(50);
-    return true;
+bool button_is_pressed(int btn) {
+    if (digitalRead(btn) == LOW){
+        delay(50);
+        return true;
     }
-  return false;
+    return false;
 }
-
 
 void wakeUp() {
-  wakeup = true;
+    wakeup = true;
 }
-
 
 void activateFunc(const byte func, int blinkTime=500){
-  bool blink = false;
-  while (true){
-    u8g2.clearBuffer();
-    u8g2.setFont(u8g2_font_tinyunicode_tf);
-    u8g2.drawStr(0, 15, "1. Quick Flash");
-    u8g2.drawStr(0, 20, "2. Always On");
-    u8g2.drawStr(0, 25, "3. Blink");
-    u8g2.drawStr(0, 30, "4. Return");
-    
-    u8g2.setCursor(10, 40);
-    u8g2.print("State: ");
-    u8g2.print(digitalRead(func));
-    
-    u8g2.sendBuffer();
+    bool blink = false;
+    while (true){
+        display.clearDisplay();
+        display.setTextSize(1);
+        display.setTextColor(SSD1306_WHITE);
+        display.setCursor(0, 20);
+        display.println("1. Quick Flash");
+        display.setCursor(0, 30);
+        display.println("2. Always On");
+        display.setCursor(0, 40);
+        display.println("3. Blink");
+        display.setCursor(0, 50);
+        display.println("4. Return");
+        
+        display.setTextSize(2);
+        display.setCursor(10, 0);
+        display.print("State: ");
+        display.print(digitalRead(func));
+        display.display();
 
-    if (blink){
-      digitalWrite(func, !digitalRead(func));
-      delay(blinkTime);
+        if (blink){
+            digitalWrite(func, !digitalRead(func));
+            delay(blinkTime);
+        }
+
+        if (button_is_pressed(btn1))
+            digitalWrite(func, HIGH);
+        else
+            digitalWrite(func, LOW);
+
+        if (button_is_pressed(btn2)){
+            if (digitalRead(func) == LOW)
+                digitalWrite(func, HIGH);
+            else 
+                digitalWrite(func, LOW);
+            delay(500);
+        }
+        else if (button_is_pressed(btn3))
+            blink = !blink;
+        else if (button_is_pressed(btn4)){
+            digitalWrite(func, LOW);
+            return;
+        }
     }
-
-    if (button_is_pressed(btn1))
-      digitalWrite(func, HIGH);
-    else
-      digitalWrite(func, LOW);
-
-    if (button_is_pressed(btn2)){
-      if (digitalRead(func) == HIGH)
-        digitalWrite(func, HIGH);
-      else 
-        digitalWrite(func, LOW);
-      delay(500);
-    }
-    else if (button_is_pressed(btn3))
-      blink = !blink;
-
-    else if (button_is_pressed(btn4)){
-      return;
-    }
-  }
 }
 
-void watchFuncs(void)
-{
-  delay(50);
-  while(true){
-    u8g2.clearBuffer();
-    u8g2.setFont(u8g2_font_tinyunicode_tf);
-    u8g2.drawStr(0, 15, "1. White LED");
-    u8g2.drawStr(0, 20, "2. Fan");
-    u8g2.drawStr(0, 25, "3. Laser");
-    u8g2.drawStr(0, 30, "4. UV LED");
-    
-    u8g2.setCursor(10, 40);
-    u8g2.print("Sel: ");
-    u8g2.print(selectedPart);
-    
-    u8g2.sendBuffer();
-    
-    if (button_is_pressed(btn2))
-    {
-      selectedPart++;
-      if (selectedPart > totalParts) selectedPart = 1;
-    }
-
-    else if (button_is_pressed(btn1))
-    {
-      selectedPart--;
-      if (selectedPart < 1) selectedPart = totalParts;
-    }
-
-    else if (button_is_pressed(btn4)) return;
-
-    else if (button_is_pressed(btn3))
-    {
-      switch (selectedPart)
-      {
-        case 1:
-          activateFunc(Func1);
-          continue;
-        case 2:
-          activateFunc(Func2, 1000);
-          continue;
-        case 3:
-          activateFunc(Func3);
-          continue;
-        case 4:
-          activateFunc(Func4, 200);
-          continue;
-      }
-    }
-
+void watchFuncs(void) {
     delay(50);
-  }
+    while(true){
+        display.clearDisplay();
+        display.setTextSize(1);
+        display.setTextColor(SSD1306_WHITE);
+        display.setCursor(0, 20);
+        display.println("1. White LED");
+        display.setCursor(0, 30);
+        display.println("2. Fan");
+        display.setCursor(0, 40);
+        display.println("3. Laser");
+        display.setCursor(0, 50);
+        display.println("4. BuiltIn LED");
+        display.setTextSize(2);
+        display.setCursor(10, 0);
+        display.print("Sel: ");
+        display.print(selectedPart);
+        display.display();
+        
+        if (button_is_pressed(btn2)){
+            selectedPart++;
+            if (selectedPart > totalParts) selectedPart = 1;
+        }
+        else if (button_is_pressed(btn1)){
+            selectedPart--;
+            if (selectedPart < 1) selectedPart = totalParts;
+        }
+        else if (button_is_pressed(btn4)) return;
+        else if (button_is_pressed(btn3)){
+            switch (selectedPart){
+                case 1:
+                    activateFunc(Func1); continue;
+                case 2:
+                    activateFunc(Func2, 1000); continue;
+                case 3:
+                    activateFunc(Func3); continue;
+                case 4:
+                    activateFunc(LED_BUILTIN, 200); continue;
+            }
+        }
+        delay(50);
+    }
 }
 
 void calculator(void) {
-    const char* options[] = {"1","2","3","4","5","6","7","8","9","0",".","+","-","*","/","^","√","%","(",")"};
+    const char* options[] = {"1","2","3","4","5","6","7","8","9","0",".","+","-","*","/","^","r","%","(",")"};
     const int numOptions = sizeof(options)/sizeof(options[0]);
     int currentOption = 0;
     char expr[25] = "";
@@ -175,50 +179,48 @@ void calculator(void) {
     bool error = false;
 
     while (!done) {
-        u8g2.clearBuffer();
+        display.clearDisplay();
+        
+        display.setTextSize(2);
+        display.setCursor(0, 0);
+        display.print("Calculator");
 
-        // Draw current expression
-        u8g2.setFont(u8g2_font_ncenB08_tr);
-        u8g2.drawStr(0, 40, expr);
+        display.setTextSize(1);
+        display.setCursor(0, 24);
+        display.print(expr);
 
-        // Display "Sel:" label
-        u8g2.drawStr(0, 10, "Sel:");
-
-        // Draw options with highlight on current selection
-        int startX = 30; // starting x position for options
-        int yPos = 10;   // y position for options
-        int spacing = 20; // space between options
+        int startX = 30;
+        int yPos = 20;
+        int spacing = 12;
 
         for (int i = 0; i < numOptions; i++) {
-            int x = startX + i * spacing;
+            int x = startX + (i % 7) * spacing;
+            int y = yPos + (i / 7) * 10;
             if (i == currentOption) {
-                // Highlight selected option
-                u8g2.setDrawColor(0); // Set background to black (inverted)
-                u8g2.drawBox(x - 1, yPos - 8, spacing - 2, 10); // draw background box
-                u8g2.setDrawColor(1); // Set back to normal color
-                u8g2.setFont(u8g2_font_ncenB08_tr);
-                u8g2.drawStr(x, yPos, options[i]);
+                display.fillRect(x-1, y-1, spacing+2, 10, SSD1306_WHITE);
+                display.setTextColor(SSD1306_BLACK);
+                display.setCursor(x, y);
+                display.print(options[i]);
+                display.setTextColor(SSD1306_WHITE);
             } else {
-                // Normal display
-                u8g2.setFont(u8g2_font_ncenB08_tr);
-                u8g2.drawStr(x, yPos, options[i]);
+                display.setCursor(x, y);
+                display.print(options[i]);
             }
         }
 
-        // Show result if needed
         if (showResult) {
             if (error) {
-                u8g2.drawStr(10, 20, "Error!");
+                display.setCursor(10, 48);
+                display.print("Error!");
             } else {
-                u8g2.setCursor(0, 64);
-                u8g2.print("= ");
-                u8g2.print(result, 6);
+                display.setCursor(0, 56);
+                display.print("= ");
+                display.print(result, 6);
             }
         }
 
-        u8g2.sendBuffer();
+        display.display();
 
-        // Button handling
         if (button_is_pressed(btn1)) {
             currentOption = (currentOption + 1) % numOptions;
             delay(200);
@@ -238,13 +240,12 @@ void calculator(void) {
             delay(500);
         }
         else if (button_is_pressed(btn4)) {
-            done = true;
             delay(200);
+            return;
         }
         delay(50);
     }
 }
-
 
 double parsePrimary(const char* &s, bool &error);
 
@@ -271,7 +272,7 @@ double parseFactor(const char* &s, bool &error) {
     while (*s == ' ') s++;
     if (*s == '+') { s++; return parseFactor(s, error); }
     if (*s == '-') { s++; return -parseFactor(s, error); }
-    if (*s == '√') { s++; double val = parseFactor(s, error); return val<0?(error=true,0):sqrt(val); }
+    if (*s == 'r') { s++; double val = parseFactor(s, error); return val<0?(error=true,0):sqrt(val); }
     if (*s == '(') {
         s++;
         double val = parsePrimary(s, error);
@@ -329,35 +330,33 @@ double evaluateExpression(const char* expr, bool &error) {
 void randomInt() {
     int range = 1;
     bool inRandomInt = true;
-    unsigned long lastActionTime = 0;
-    const unsigned long debounceDelay = 100;
-    
     while (inRandomInt) {
-        u8g2.clearBuffer();
-        u8g2.setFont(u8g2_font_t0_11_mf);
-        u8g2.drawStr(10, 20, "Random Int Mode");
-        u8g2.setCursor(10, 40);
-        u8g2.print("Range: 0 - ");
-        u8g2.print(range);
-        u8g2.sendBuffer();
+        display.clearDisplay();
+        display.setTextSize(2);
+        display.setCursor(0, 0);
+        display.println("Random Int");
+        display.setCursor(10, 32);
+        display.print("Range: 0 - ");
+        display.print(range);
+        display.display();
 
         if (button_is_pressed(btn1)) {
             range += 10;
             delay(200);
         } 
         else if (button_is_pressed(btn2)) {
-            range--;
+            if (range > 0) range--;
             delay(200);
         } 
         else if (button_is_pressed(btn3)) {
             int randNumber = random(0, range + 1);
-            u8g2.clearBuffer();
-            u8g2.setFont(u8g2_font_t0_18b_tf);
-            u8g2.setCursor(10, 40);
-            u8g2.print("Rnd: ");
-            u8g2.print(randNumber);
-            u8g2.sendBuffer();
-            delay(3000);
+            display.clearDisplay();
+            display.setTextSize(2);
+            display.setCursor(10, 24);
+            display.print("Rnd: ");
+            display.print(randNumber);
+            display.display();
+            delay(2000);
         } 
         else if (button_is_pressed(btn4)) {
             inRandomInt = false;
@@ -366,52 +365,43 @@ void randomInt() {
     }
 }
 
-void loop()
-{
-  u8g2.clearBuffer();
-  u8g2.setFont(u8g2_font_boutique_bitmap_9x9_te);
-  u8g2.drawStr(0, 18, "1. Outputs 2. Maths");
-  u8g2.drawStr(0, 28, "3. Random 4. Blink");
-  u8g2.setFont(u8g2_font_tinyunicode_tr);
-  u8g2.setCursor(10, 38);
-  u8g2.print("Option ");
-  u8g2.print(selectedFunction);
-  u8g2.print(" Selected");
-  u8g2.sendBuffer();
+void loop() {
+    display.clearDisplay();
+    display.setTextSize(2);
+    display.setCursor(0, 0);
+    display.print("Menu     ");
+    display.print(selectedFunction);
 
-  if (button_is_pressed(btn2))
-  {
-    selectedFunction++;
-    if (selectedFunction > totalFunctions) selectedFunction = 1;
-  }
+    display.setTextSize(1);
+    display.setCursor(0, 25);
+    display.print("1. Output   2. Maths");
+    display.setCursor(0, 40);
+    display.print("3. Random   4. Blink");
+    display.setCursor(10, 48);
 
-  else if (button_is_pressed(btn1))
-  {
-    selectedFunction--;
-    if (selectedFunction < 1){
-      selectedFunction = totalFunctions;
+    display.display();
+
+    if (button_is_pressed(btn2)) {
+        selectedFunction++;
+        if (selectedFunction > totalFunctions) selectedFunction = 1;
     }
-  }
-
-  else if (button_is_pressed(btn3))
-  {
-    switch (selectedFunction)
-    {
-      case 1:
-        watchFuncs(); break;
-      case 2:
-        calculator(); break;
-      case 3:
-        randomInt(); break;
-      case 4:
-        for (int i = 1000; i <= 1; i--){
-          digitalWrite(LED_BUILTIN, HIGH);
-          delay(1000);
-          digitalWrite(LED_BUILTIN, LOW);
-          delay(1000);
+    else if (button_is_pressed(btn1)) {
+        selectedFunction--;
+        if (selectedFunction < 1){
+            selectedFunction = totalFunctions;
         }
     }
-  }
-
-  delay(20);
+    else if (button_is_pressed(btn3)) {
+        switch (selectedFunction) {
+            case 1:
+                watchFuncs(); break;
+            case 2:
+                calculator(); break;
+            case 3:
+                randomInt(); break;
+            case 4:
+                break;
+        }
+    }
+    delay(20);
 }
