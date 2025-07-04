@@ -1,6 +1,5 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
-#include <Wire.h>
 #include <ctype.h>
 #include <math.h>
 
@@ -48,7 +47,6 @@ void setup() {
     pinMode(Func2, OUTPUT);
     pinMode(Func3, OUTPUT);
     pinMode(Func4, OUTPUT);
-    pinMode(LED_BUILTIN, OUTPUT);
     randomSeed(analogRead(1));
     
     for(int i=0; i<100; i++){
@@ -131,9 +129,9 @@ void watchFuncs(void) {
         display.setCursor(0, 20);
         display.println("1. White LED");
         display.setCursor(0, 30);
-        display.println("2. Fan");
+        display.println("2. Laser");
         display.setCursor(0, 40);
-        display.println("3. Laser");
+        display.println("3. UV LED");
         display.setCursor(0, 50);
         display.println("4. BuiltIn LED");
         display.setTextSize(2);
@@ -156,9 +154,9 @@ void watchFuncs(void) {
                 case 1:
                     activateFunc(Func1); continue;
                 case 2:
-                    activateFunc(Func2, 1000); continue;
+                    activateFunc(Func3, 1000); continue;
                 case 3:
-                    activateFunc(Func3); continue;
+                    activateFunc(Func4); continue;
                 case 4:
                     activateFunc(LED_BUILTIN, 200); continue;
             }
