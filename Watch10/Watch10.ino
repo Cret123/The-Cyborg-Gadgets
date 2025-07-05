@@ -1,3 +1,5 @@
+// Initial arduino pro mini watch with no display
+
 const byte BtnEnter = 2;
 const byte Btn1 = 4;
 const byte Btn2 = 7;

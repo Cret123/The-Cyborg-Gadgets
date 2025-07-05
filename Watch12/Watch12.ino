@@ -1,3 +1,5 @@
+// Initial OLED display watch
+
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 #include <avr/sleep.h>
@@ -56,6 +58,8 @@ void setup() {
   display.print("Watch 12!");
   display.display();
 
+  delay(100);
+
   for (int i = 0; i < 100; i++) {
     delay(50);
     digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
@@ -84,7 +88,6 @@ bool button_is_pressed(int btn) {
   }
   return false;
 }
-
 
 void wakeUp() {
     wakeup = true;
@@ -136,7 +139,6 @@ void activateFunc(const byte func, int blinkTime = 500) {
     display.display();
     
     if (!blink) delay(50);
-    
     if (keepOn) {
       digitalWrite(func, HIGH);
     } 
@@ -381,7 +383,7 @@ void unitConverter() {
         "C->F",   "F->C",
         "kg->lb", "lb->kg"
     };
-    enum { LEN=0, LEN2, TEMP, TEMP2, WT, WT2 };
+    enum {LEN=0, LEN2, TEMP, TEMP2, WT, WT2};
     const int numTypes = sizeof(types) / sizeof(types[0]);
     int selectedType = 0;
     float inputValue = 0;
@@ -526,7 +528,7 @@ void loop() {
     if (selectedFunction < 1) {
       selectedFunction = totalFunctions;
     }
-  } else if (button_is_pressed(btn3)) {
+  } else if (button_is_pressed(btn4)) {
     switch (selectedFunction) {
       case 1:
         watchFuncs();

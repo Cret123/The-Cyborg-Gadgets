@@ -4,12 +4,10 @@ This repository contains a series of Arduino programs designed for a customizabl
 
 ## Usage
 
-1. **Clone or download this repository.**
-2. **(If not already) install the Arduino IDE.
-3. Open the program (InitalWatch/InitialWatch.ino).
-4. **Connect your hardware** according to the pin definitions at the top of the file.
-5. **Install required libraries** via the Arduino Library Manager:
-   - `U8g2lib` (for OLED display)
-   - `LowPower` (for power-saving features, some versions)
-6. **Upload the sketch** to your Arduino Pro Mini.
-7. **Stick the arduino to your watch. Initially done by gluing magnets to the watch and arduino.
+1. Clone or download this repository.
+2. (If not already) install the Arduino IDE.
+3. Open the program.
+4. Connect your hardware according to the pins at the top of the file.
+5. Install required libraries via the Arduino Library Manager.
+6. Upload the sketch to your Arduino Pro Mini.
+7. Stick the arduino to your watch. Initially done by gluing magnets to the watch and arduino, to make it detachable.
