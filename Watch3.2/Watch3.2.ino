@@ -54,14 +54,19 @@ void setup() {
   display.setTextColor(SSD1306_WHITE);
   display.setCursor(7, 0);
   display.print("Wecome to");
-  display.setCursor(10, 35);
-  display.print("Watch 12!");
+  display.setCursor(20, 20);
+  display.print("Watch 2");
+  display.setCursor(30, 50);
+  display.print("Gen 3");
+  display.setTextSize(1);
+  display.setCursor(55, 40);
+  display.print("of");
   display.display();
 
   delay(100);
 
-  for (int i = 0; i < 100; i++) {
-    delay(50);
+  for (int i = 0; i < 200; i++) {
+    delay(25);
     digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
     if (button_is_pressed(btn1)) {
       digitalWrite(LED_BUILTIN, LOW);
@@ -131,7 +136,7 @@ void activateFunc(const byte func, int blinkTime = 500) {
     display.println("3. Blink");
     display.setCursor(0, 50);
     display.println("4. Return");
-
+    
     display.setTextSize(2);
     display.setCursor(10, 0);
     display.print("State: ");
@@ -143,28 +148,25 @@ void activateFunc(const byte func, int blinkTime = 500) {
       digitalWrite(func, HIGH);
     } 
     else if (blink) {
-      digitalWrite(func, HIGH);
-      delay(blinkTime / 2);
-      digitalWrite(func, LOW);
+      digitalWrite(func, !digitalRead(func));
       delay(blinkTime / 2);
     } 
     else {
-      if (digitalRead(btn1) == LOW) digitalWrite(func, HIGH);
+      if (button_is_pressed(btn1)) digitalWrite(func, HIGH);
       else digitalWrite(func, LOW);
     }
 
     if (button_is_pressed(btn2)) {
       keepOn = !keepOn;
       if (keepOn) blink = false;
-      delay(200);
     } 
     else if (button_is_pressed(btn3)) {
       blink = !blink;
       if (blink) keepOn = false;
-      delay(200);
-    } 
+    }
     else if (button_is_pressed(btn4)) {
       return;
+    delay(200);
     }
   }
 }
@@ -193,10 +195,12 @@ void watchFuncs(void) {
     if (button_is_pressed(btn2)) {
       selectedPart++;
       if (selectedPart > totalParts) selectedPart = 1;
-    } else if (button_is_pressed(btn1)) {
+    } 
+    else if (button_is_pressed(btn1)) {
       selectedPart--;
       if (selectedPart < 1) selectedPart = totalParts;
-    } else if (button_is_pressed(btn4)) return;
+    } 
+    else if (button_is_pressed(btn4)) return;
     else if (button_is_pressed(btn3)) {
       switch (selectedPart) {
         case 1:
@@ -236,7 +240,8 @@ void calculator(void) {
         if (showResult) {
             if (error) {
                 display.print("Error!");
-            } else {
+            } 
+            else {
                 display.print("");
                 display.print(result, 6);
             }
@@ -255,7 +260,8 @@ void calculator(void) {
                 display.setCursor(x, y);
                 display.print(options[i]);
                 display.setTextColor(SSD1306_WHITE);
-            } else {
+            } 
+            else {
                 display.setCursor(x, y);
                 display.print(options[i]);
             }
@@ -307,10 +313,12 @@ double parseNumber(const char* &s, bool &error) {
         if (*s == '.') {
             if (hasDecimal) { error = true; return 0; }
             hasDecimal = true;
-        } else if (hasDecimal) {
+        } 
+        else if (hasDecimal) {
             value += (*s - '0') * frac;
             frac *= 0.1;
-        } else {
+        } 
+        else {
             value = value * 10 + (*s - '0');
         }
         s++;
@@ -438,7 +446,8 @@ void unitConverter() {
                 }
                 enteringValue = false;
                 delay(500);
-            } else {
+            } 
+            else {
                 return;
             }
         }
@@ -499,6 +508,9 @@ void bomb(){
         interval = interval - (interval - minInterval) / 6;
         if (interval < minInterval) interval = minInterval;
     }
+    digitalWrite(Func1, HIGH);
+    delay(20);
+    digitalWrite(Func1, LOW);
 }
 
 void loop() {
@@ -523,12 +535,14 @@ void loop() {
   if (button_is_pressed(btn2)) {
     selectedFunction++;
     if (selectedFunction > totalFunctions) selectedFunction = 1;
-  } else if (button_is_pressed(btn1)) {
+  } 
+  else if (button_is_pressed(btn1)) {
     selectedFunction--;
     if (selectedFunction < 1) {
       selectedFunction = totalFunctions;
     }
-  } else if (button_is_pressed(btn4)) {
+  } 
+  else if (button_is_pressed(btn3)) {
     switch (selectedFunction) {
       case 1:
         watchFuncs();
@@ -547,11 +561,8 @@ void loop() {
         break;
       case 6:
           display.clearDisplay();
-          display.setTextSize(2);
-          display.setCursor(0, 30);
-          display.print("Sleeping...");
           display.display();
-          delay(250);
+          while (button_is_pressed(btn3)) delay(10); // Ensure it does not immediately wake up again
           goToSleep();
           break;
     }

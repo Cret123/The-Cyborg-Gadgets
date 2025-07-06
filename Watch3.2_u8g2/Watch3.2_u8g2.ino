@@ -40,7 +40,7 @@ void setup()
     u8g2.setFont(u8g2_font_t0_11_mf);
     u8g2.drawStr(12, 20, ("Welcome to Watch"));
     u8g2.setFont(u8g2_font_t0_18b_tf );
-    u8g2.drawStr(50, 32, "10!");
+    u8g2.drawStr(50, 32, "3.2!");
     u8g2.sendBuffer();
     delay(5000);
 

@@ -1,6 +1,6 @@
 # The Watch Extension
 
-This repository contains a series of Arduino programs designed for a customizable multitool watch extension. While earlier models were made up of simple parallel circuits repeated many times, later more advanced models use a computer chip to transform an everyday watch a smart, multifunctional James Bond device. 
+This repository contains a series of Arduino programs designed for a customizable multitool watch extension. The watches are split into three generations. Generation 1 featured simple parrallel circuits on a soldering board. Generation 2 still retained the same circuit, however was built with wires rather than a prototype board. This enhanced its lifespan from roughly 3 weeks to more than 2 years. Now Generation 3 an arduino to transform an everyday watch a smart, multifunctional James Bond device, while suprisingly saving the amount of power used.
 
 ## Usage
 

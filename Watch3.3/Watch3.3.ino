@@ -497,11 +497,14 @@ void setup() {
       digitalWrite(LED_BUILTIN, LOW); delay(200);
     }
   }
+
   display.clearDisplay();
   display.setTextSize(2);
   display.setTextColor(SSD1306_WHITE);
-  display.setCursor(0, 0);
-  display.print("Watch 13");
+  display.setCursor(7, 0);
+  display.print("Wecome to");
+  display.setCursor(5, 35);
+  display.print("Watch 3.3!");
   display.display();
   delay(1200);
   currentFunction = FUNC_CLOCK;

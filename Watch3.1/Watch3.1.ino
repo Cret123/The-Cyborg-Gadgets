@@ -168,13 +168,6 @@ void setup() {
     pinMode(Func4, OUTPUT);
 
     randomSeed(analogRead(7));
-
-  for (int i = 0; i < 13; i++) {
-    digitalWrite(i, HIGH);
-    }
-        delay(10000);
-
-
 }
 
 void loop() {
