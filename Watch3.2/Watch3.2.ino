@@ -94,6 +94,8 @@ bool button_is_pressed(int btn) {
   return false;
 }
 
+void(* reset) (void) = 0;
+
 void wakeUp() {
     wakeup = true;
 }
@@ -389,9 +391,12 @@ void unitConverter(void) {
     const char* types[] = {
         "cm->in", "in->cm",
         "C->F",   "F->C",
-        "kg->lb", "lb->kg"
+        "kg->lb", "lb->kg",
+        "km->mi", "mi->km",
+        "g->oz",  "oz->g",
+        "L->gal", "gal->L"
     };
-    enum {LEN=0, LEN2, TEMP, TEMP2, WT, WT2};
+    enum {LEN=0, LEN2, TEMP, TEMP2, WT, WT2, KM_MI, MI_KM, G_OZ, OZ_G, L_GAL, GAL_L};
     const int numTypes = sizeof(types) / sizeof(types[0]);
     int selectedType = 0;
     float inputValue = 0;
@@ -441,6 +446,12 @@ void unitConverter(void) {
                     case TEMP2: result = (inputValue - 32.0) * 5.0 / 9.0; break; // F to C
                     case WT:    result = inputValue * 2.20462; break;      // kg to lb
                     case WT2:   result = inputValue / 2.20462; break;      // lb to kg
+                    case KM_MI: result = inputValue * 0.621371; break;     // km to mi
+                    case MI_KM: result = inputValue / 0.621371; break;     // mi to km
+                    case G_OZ:  result = inputValue * 0.035274; break;     // g to oz
+                    case OZ_G:  result = inputValue / 0.035274; break;     // oz to g
+                    case L_GAL: result = inputValue * 0.264172; break;     // L to gal (US)
+                    case GAL_L: result = inputValue / 0.264172; break;     // gal (US) to L
                 }
                 enteringValue = false;
                 delay(500);
@@ -558,11 +569,14 @@ void loop() {
         bomb();
         break;
       case 6:
-          display.clearDisplay();
-          display.display();
-          while (button_is_pressed(btn3)) delay(10); // Ensure it does not immediately wake up again
-          goToSleep();
-          break;
+        display.clearDisplay();
+        display.display();
+        while (button_is_pressed(btn3)) delay(10); // Ensure it does not immediately wake up again
+        goToSleep();
+        break;
     }
+  }
+  else if (button_is_pressed(btn4)){
+    reset();
   }
 }
