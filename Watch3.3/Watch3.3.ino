@@ -24,10 +24,9 @@ enum WatchFunction {
   FUNC_STOPWATCH,
   FUNC_ALARM,
   FUNC_CALCULATOR,
-  FUNC_LED1,
-  FUNC_LED2,
-  FUNC_LED3,
-  FUNC_LED4,
+  FUNC1,
+  FUNC2,
+  FUNC3,
   FUNC_BUILTINLED,
   NUM_FUNCTIONS
 };
@@ -37,7 +36,6 @@ int currentFunction = FUNC_CLOCK;
 const byte Func1 = 8;
 const byte Func2 = 9;
 const byte Func3 = 10;
-const byte Func4 = 11;
 
 struct FuncState {
   bool blink = false;
@@ -486,7 +484,6 @@ void setup() {
   pinMode(Func1, OUTPUT);
   pinMode(Func2, OUTPUT);
   pinMode(Func3, OUTPUT);
-  pinMode(Func4, OUTPUT);
   pinMode(LED_BUILTIN, OUTPUT);
 
   if (!rtc.begin()) {
@@ -538,17 +535,14 @@ void loop() {
     case FUNC_CALCULATOR:
       showCalculator();
       break;
-    case FUNC_LED1:
-      showFunc("White LED", Func1, FUNC_LED1);
+    case FUNC1:
+      showFunc("White LED", Func1, FUNC1);
       break;
-    case FUNC_LED2:
-      showFunc("Laser", Func2, FUNC_LED2);
+    case FUNC2:
+      showFunc("Laser", Func2, FUNC2);
       break;
-    case FUNC_LED3:
-      showFunc("UV LED", Func3, FUNC_LED3);
-      break;
-    case FUNC_LED4:
-      showFunc("LED4", Func4, FUNC_LED4);
+    case FUNC3:
+      showFunc("UV LED", Func3, FUNC3);
       break;
     case FUNC_BUILTINLED:
       showFunc("BuiltIn", LED_BUILTIN, FUNC_BUILTINLED);

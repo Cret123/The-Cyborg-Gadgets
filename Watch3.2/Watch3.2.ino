@@ -385,7 +385,7 @@ double evaluateExpression(const char* expr, bool &error) {
     return result;
 }
 
-void unitConverter() {
+void unitConverter(void) {
     const char* types[] = {
         "cm->in", "in->cm",
         "C->F",   "F->C",
@@ -396,10 +396,9 @@ void unitConverter() {
     int selectedType = 0;
     float inputValue = 0;
     bool enteringValue = true;
-    bool done = false;
     float result = 0;
 
-    while (!done) {
+    while (true){
         display.clearDisplay();
         display.setTextSize(1);
         display.setCursor(0, 25);
@@ -409,7 +408,7 @@ void unitConverter() {
         display.setCursor(0, 50);
         display.print("Input: ");
         display.setTextSize(2);
-        display.setCursor(60, 45);
+        display.setCursor(50, 45);
         display.print(inputValue, 2);
 
         display.setTextSize(2);
@@ -423,15 +422,14 @@ void unitConverter() {
         if (button_is_pressed(btn3)) {
             selectedType = (selectedType + 1) % numTypes;
             enteringValue = true;
-            inputValue = 0;
             delay(200);
         } 
-        else if (button_is_pressed(btn2)) {
-            if (enteringValue) inputValue += 1;
+        else if (button_is_pressed(btn2)){
+            if (enteringValue) inputValue--;
             delay(100);
         } 
-        else if (button_is_pressed(btn1)) {
-            if (enteringValue && inputValue >= 1) inputValue -= 1;
+        else if (button_is_pressed(btn1)){
+            if (enteringValue) inputValue++;
             delay(100);
         } 
         else if (button_is_pressed(btn4)) {
@@ -455,7 +453,7 @@ void unitConverter() {
     }
 }
 
-void randomInt() {
+void randomInt(){
   randomSeed(analogRead(1));
   int range = 1;
   while (true) {
