@@ -16,7 +16,7 @@
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
 int selectedFunction = 1;
-const int totalFunctions = 6;
+const int totalFunctions = 7;
 
 int selectedPart = 1;
 const int totalParts = 4;
@@ -66,7 +66,7 @@ void setup() {
   delay(100);
 
   for (int i = 0; i < 200; i++) {
-    delay(25);
+    delay(20);
     digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
     if (button_is_pressed(btn1)) {
       digitalWrite(LED_BUILTIN, LOW);
@@ -488,9 +488,8 @@ void randomInt(){
     else if (button_is_pressed(btn3)) {
       int randNumber = random(0, range + 1);
       display.clearDisplay();
-      display.setTextSize(2);
-      display.setCursor(10, 24);
-      display.print("Rnd: ");
+      display.setTextSize(4);
+      display.setCursor(40, 24);
       display.print(randNumber);
       display.display();
       delay(2000);
@@ -501,6 +500,70 @@ void randomInt(){
   }
 }
 
+void dinoRunner() {
+  int dinoY = 30, velocity = 0, gravity = 2, jumpPower = -12;
+  int cactusX = 128, cactusY = 40, cactusW = 6, cactusH = 16;
+  bool jumping = false, gameOver = false;
+  unsigned long lastMove = millis(), lastCactusMove = millis();
+  int score = 0;
+
+  while (true) {
+    if (button_is_pressed(btn4)) return;
+
+    if (!gameOver && button_is_pressed(btn3) && !jumping) {
+      velocity = jumpPower;
+      jumping = true;
+    }
+
+    if (!gameOver && millis() - lastMove > 40) {
+      if (jumping) {
+        dinoY += velocity;
+        velocity += gravity;
+        if (dinoY >= 40) {
+          dinoY = 40;
+          jumping = false;
+        }
+      }
+      lastMove = millis();
+    }
+
+    if (!gameOver && millis() - lastCactusMove > 24) {
+      cactusX -= 3;
+      if (cactusX < -cactusW) {
+        cactusX = 128;
+        score++;
+      }
+      lastCactusMove = millis();
+    }
+
+    if (!gameOver && cactusX < 20 && cactusX + cactusW > 10 && dinoY + 16 > cactusY) {
+      gameOver = true;
+    }
+
+    display.clearDisplay();
+    display.setTextSize(2);
+    display.setCursor(80,0);
+    display.print(score);
+
+    display.drawLine(0, 56, 128, 56, SSD1306_WHITE);
+
+    display.fillRect(10, dinoY, 10, 16, SSD1306_WHITE);
+
+    display.fillRect(cactusX, cactusY, cactusW, cactusH, SSD1306_WHITE);
+
+    if (gameOver) {
+      display.setTextSize(2);
+      display.setCursor(5, 20);
+      display.print("Game Over!");
+      display.setCursor(5, 35);
+      display.display();
+      delay(3000);
+      return;
+    }
+    display.display();
+    delay(10);
+  }
+}
 
 void bomb(){
     int interval = 1000;
@@ -530,12 +593,14 @@ void loop() {
   display.print(selectedFunction);
 
   display.setTextSize(1);
-  display.setCursor(0, 25);
-  display.print("1. Output  2. Maths");
-  display.setCursor(0, 40);
-  display.print("3. Convert 4. Random");
-  display.setCursor(0, 55);
-  display.print("5. Detonate 6. Power");
+  display.setCursor(0, 20);
+  display.print("1. Output   5. Runner");
+  display.setCursor(0, 32);
+  display.print("2. Maths  6. Detonate");
+  display.setCursor(0, 44);
+  display.print("3. Convert   7. Power");
+  display.setCursor(0, 56);
+  display.print("4. Random");
 
   display.display();
 
@@ -566,12 +631,15 @@ void loop() {
         randomInt();
         break;
       case 5:
-        bomb();
+        dinoRunner();
         break;
       case 6:
+        bomb();
+        break;
+      case 7:
         display.clearDisplay();
         display.display();
-        while (button_is_pressed(btn3)) delay(10); // Ensure it does not immediately wake up again
+        while (button_is_pressed(btn3)) delay(10); // Ensure interrupt does not trigger immediately
         goToSleep();
         break;
     }
