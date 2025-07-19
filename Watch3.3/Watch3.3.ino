@@ -1,22 +1,28 @@
-// Real time watch proram
-
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 #include <Wire.h>
-#include <RTClib.h> // (DS3231/DS1307)
+#include <Ds1302.h>
+
+#define PIN_ENA 4
+#define PIN_CLK 2
+#define PIN_DAT 3
+
+Ds1302 rtc(PIN_ENA, PIN_CLK, PIN_DAT);
 
 #define SCREEN_WIDTH 128
 #define SCREEN_HEIGHT 64
 #define OLED_RESET    -1
 
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
-RTC_DS3231 rtc;
 
 const byte btn1 = 6;
 const byte btn2 = 4;
 const byte btn3 = 3;
 const byte btn4 = 5;
-const byte btn5 = 7;
+
+const byte Func1 = 8;
+const byte Func2 = 9;
+const byte Func3 = 10;
 
 enum WatchFunction {
   FUNC_CLOCK,
@@ -31,12 +37,6 @@ enum WatchFunction {
   NUM_FUNCTIONS
 };
 
-int currentFunction = FUNC_CLOCK;
-
-const byte Func1 = 8;
-const byte Func2 = 9;
-const byte Func3 = 10;
-
 struct FuncState {
   bool blink = false;
   bool keepOn = false;
@@ -47,7 +47,7 @@ struct FuncState {
 
 FuncState funcStates[NUM_FUNCTIONS];
 
-bool button_is_pressed(byte btn) {
+bool button_is_pressed(const byte btn) {
   if (digitalRead(btn) == LOW) {
     delay(100);
     return true;
@@ -55,26 +55,27 @@ bool button_is_pressed(byte btn) {
   return false;
 }
 
-void showClock() {
+void showClock(){
   static bool setMode = false;
   static int setField = 0;
-  static DateTime setTime;
+  static Ds1302::DateTime setTime;
   static unsigned long lastBlink = 0;
   static bool blinkOn = true;
 
-  DateTime now = rtc.now();
+  Ds1302::DateTime now;
+  rtc.getDateTime(&now);
   if (!setMode) setTime = now;
 
   display.clearDisplay();
   display.setTextSize(2);
-  display.setCursor(0, 0);
+  display.setCursor(0, 30);
 
-  int hour = setMode ? setTime.hour() : now.hour();
-  int min = setMode ? setTime.minute() : now.minute();
-  int sec = setMode ? setTime.second() : now.second();
-  int day = setMode ? setTime.day() : now.day();
-  int month = setMode ? setTime.month() : now.month();
-  int year = setMode ? setTime.year() : now.year();
+  int hour = setMode ? setTime.hour : now.hour;
+  int min = setMode ? setTime.minute : now.minute;
+  int sec = setMode ? setTime.second : now.second;
+  int day = setMode ? setTime.day : now.day;
+  int month = setMode ? setTime.month : now.month;
+  int year = setMode ? setTime.year : now.year;
 
   char buf[9];
   if (setMode && setField == 0 && !blinkOn)
@@ -87,28 +88,27 @@ void showClock() {
     sprintf(buf, "%02d:%02d:%02d", hour, min, sec);
   display.print(buf);
 
-  display.setTextSize(1);
-  display.setCursor(0, 28);
+  display.setTextSize(0);
+  display.setCursor(0, 0);
 
   if (setMode && setField == 3 && !blinkOn)
-    sprintf(buf, "  /%02d/%04d", month, year);
+    sprintf(buf, "  /%02d/%04d", month, 2000 + year);
   else if (setMode && setField == 4 && !blinkOn)
-    sprintf(buf, "%02d/  /%04d", day, year);
+    sprintf(buf, "%02d/  /%04d", day, 2000 + year);
   else if (setMode && setField == 5 && !blinkOn)
     sprintf(buf, "%02d/%02d/    ", day, month);
   else
-    sprintf(buf, "%02d/%02d/%04d", day, month, year);
+    sprintf(buf, "%02d/%02d/%04d", day, month, 2000 + year);
   display.print(buf);
 
   display.setCursor(0, 55);
   if (!setMode) {
-    display.print("Btn1: Set Btn4/5: Switch");
+    display.print("Btn1: Set Btn4: Switch");
   } else {
     const char* fields[] = {"Hour","Min","Sec","Day","Month","Year"};
     display.print(fields[setField]);
     display.print(" Btn1: Next Btn2/3: +/-");
   }
-
   display.display();
 
   if (!setMode && button_is_pressed(btn1)) {
@@ -127,8 +127,7 @@ void showClock() {
     if (button_is_pressed(btn1)) {
       setField++;
       if (setField >= 6) {
-        rtc.adjust(DateTime(setTime.year(), setTime.month(), setTime.day(),
-                            setTime.hour(), setTime.minute(), setTime.second()));
+        rtc.setDateTime(&setTime);
         setMode = false;
       }
       delay(250);
@@ -136,24 +135,24 @@ void showClock() {
     }
     if (button_is_pressed(btn2)) {
       switch (setField) {
-        case 0: setTime = DateTime(setTime.year(), setTime.month(), setTime.day(), (setTime.hour() + 1) % 24, setTime.minute(), setTime.second()); break;
-        case 1: setTime = DateTime(setTime.year(), setTime.month(), setTime.day(), setTime.hour(), (setTime.minute() + 1) % 60, setTime.second()); break;
-        case 2: setTime = DateTime(setTime.year(), setTime.month(), setTime.day(), setTime.hour(), setTime.minute(), (setTime.second() + 1) % 60); break;
-        case 3: setTime = DateTime(setTime.year(), setTime.month(), (setTime.day() % 31) + 1, setTime.hour(), setTime.minute(), setTime.second()); break;
-        case 4: setTime = DateTime(setTime.year(), (setTime.month() % 12) + 1, setTime.day(), setTime.hour(), setTime.minute(), setTime.second()); break;
-        case 5: setTime = DateTime(setTime.year() + 1, setTime.month(), setTime.day(), setTime.hour(), setTime.minute(), setTime.second()); break;
+        case 0: setTime.hour = (setTime.hour + 1) % 24; break;
+        case 1: setTime.minute = (setTime.minute + 1) % 60; break;
+        case 2: setTime.second = (setTime.second + 1) % 60; break;
+        case 3: setTime.day = (setTime.day % 31) + 1; break;
+        case 4: setTime.month = (setTime.month % 12) + 1; break;
+        case 5: setTime.year = setTime.year + 1; if (setTime.year > 99) setTime.year = 0; break;
       }
       delay(150);
       return;
     }
     if (button_is_pressed(btn3)) {
       switch (setField) {
-        case 0: setTime = DateTime(setTime.year(), setTime.month(), setTime.day(), (setTime.hour() + 23) % 24, setTime.minute(), setTime.second()); break;
-        case 1: setTime = DateTime(setTime.year(), setTime.month(), setTime.day(), setTime.hour(), (setTime.minute() + 59) % 60, setTime.second()); break;
-        case 2: setTime = DateTime(setTime.year(), setTime.month(), setTime.day(), setTime.hour(), setTime.minute(), (setTime.second() + 59) % 60); break;
-        case 3: setTime = DateTime(setTime.year(), setTime.month(), (setTime.day() + 29) % 31 + 1, setTime.hour(), setTime.minute(), setTime.second()); break;
-        case 4: setTime = DateTime(setTime.year(), (setTime.month() + 10) % 12 + 1, setTime.day(), setTime.hour(), setTime.minute(), setTime.second()); break;
-        case 5: setTime = DateTime(setTime.year() - 1, setTime.month(), setTime.day(), setTime.hour(), setTime.minute(), setTime.second()); break;
+        case 0: setTime.hour = (setTime.hour + 23) % 24; break;
+        case 1: setTime.minute = (setTime.minute + 59) % 60; break;
+        case 2: setTime.second = (setTime.second + 59) % 60; break;
+        case 3: setTime.day = (setTime.day + 29) % 31 + 1; break;
+        case 4: setTime.month = (setTime.month + 10) % 12 + 1; break;
+        case 5: setTime.year = setTime.year - 1; if (setTime.year > 99) setTime.year = 99; break;
       }
       delay(150);
       return;
@@ -166,7 +165,7 @@ unsigned long timerLeft = 0;
 bool timerRunning = false;
 unsigned long timerLast = 0;
 
-void showTimer() {
+void showTimer(){
   display.clearDisplay();
   display.setTextSize(2);
   display.setCursor(0, 0);
@@ -207,7 +206,7 @@ unsigned long stopwatchTime = 0;
 bool stopwatchRunning = false;
 unsigned long stopwatchLast = 0;
 
-void showStopwatch() {
+void showStopwatch(){
   display.clearDisplay();
   display.setTextSize(2);
   display.setCursor(0, 0);
@@ -221,10 +220,11 @@ void showStopwatch() {
   char buf[9];
   sprintf(buf, "%02d:%02d.%01d", m, s, (int)((t % 1000) / 100));
   display.print("SW ");
+  display.setCursor(0, 30);
   display.print(buf);
 
   display.setTextSize(1);
-  display.setCursor(0, 25);
+  display.setCursor(0, 55);
   display.print("Btn1: Start/Stop  Btn2: Reset");
 
   display.display();
@@ -269,6 +269,9 @@ void showAlarm() {
 
   display.display();
 
+  Ds1302::DateTime now;
+  rtc.getDateTime(&now);
+
   if (button_is_pressed(btn1)) {
     alarmSet = !alarmSet;
     delay(200);
@@ -282,15 +285,14 @@ void showAlarm() {
     delay(100);
   }
 
-  DateTime now = rtc.now();
-  if (alarmSet && now.hour() == alarmHour && now.minute() == alarmMin && now.second() == 0 && !alarmActive) {
+  if (alarmSet && now.hour == alarmHour && now.minute == alarmMin && now.second == 0 && !alarmActive) {
     alarmActive = true;
     for (int i = 0; i < 10; i++) {
       digitalWrite(LED_BUILTIN, HIGH); delay(100);
       digitalWrite(LED_BUILTIN, LOW); delay(100);
     }
   }
-  if (now.minute() != alarmMin) alarmActive = false;
+  if (now.minute != alarmMin) alarmActive = false;
 }
 
 void showCalculator() {
@@ -480,40 +482,44 @@ void setup() {
   pinMode(btn2, INPUT_PULLUP);
   pinMode(btn3, INPUT_PULLUP);
   pinMode(btn4, INPUT_PULLUP);
-  pinMode(btn5, INPUT_PULLUP);
   pinMode(Func1, OUTPUT);
   pinMode(Func2, OUTPUT);
   pinMode(Func3, OUTPUT);
-  pinMode(LED_BUILTIN, OUTPUT);
 
-  if (!rtc.begin()) {
-  }
-  if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)){
-    while (true){
-      digitalWrite(LED_BUILTIN, HIGH); delay(200);
-      digitalWrite(LED_BUILTIN, LOW); delay(200);
+  if (!rtc.init()){
+    while true{
+      digitalWrite(LED_BUILTIN, HIGH);
+      delay(200);
+      digitalWrite(LED_BUILTIN, LOW);
+      delay(200);
     }
   }
-
+  if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)){
+  while (true){
+    digitalWrite(LED_BUILTIN, HIGH); delay(50);
+    digitalWrite(LED_BUILTIN, LOW); delay(200);
+    }
+  }
   display.clearDisplay();
   display.setTextSize(2);
   display.setTextColor(SSD1306_WHITE);
   display.setCursor(7, 0);
   display.print("Wecome to");
-  display.setCursor(5, 35);
-  display.print("Watch 3.3!");
+  display.setCursor(20, 20);
+  display.print("Watch 3");
+  display.setCursor(30, 50);
+  display.print("Gen 3");
+  display.setTextSize(1);
+  display.setCursor(55, 40);
+  display.print("of");
   display.display();
-  delay(1200);
-  currentFunction = FUNC_CLOCK;
+
+  int currentFunction = FUNC_CLOCK;
+
 }
 
 void loop() {
   if (button_is_pressed(btn4)) {
-    currentFunction--;
-    if (currentFunction < 0) currentFunction = NUM_FUNCTIONS - 1;
-    delay(200);
-  }
-  if (button_is_pressed(btn5)) {
     currentFunction++;
     if (currentFunction >= NUM_FUNCTIONS) currentFunction = 0;
     delay(200);

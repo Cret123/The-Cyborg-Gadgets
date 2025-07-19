@@ -33,7 +33,7 @@ const byte Func4 = 8;
 
 volatile bool wakeup = false;
 
-void setup() {
+void setup(){
   pinMode(btn1, INPUT_PULLUP);
   pinMode(btn2, INPUT_PULLUP);
   pinMode(btn3, INPUT_PULLUP);
@@ -42,10 +42,11 @@ void setup() {
   pinMode(Func2, OUTPUT);
   pinMode(Func3, OUTPUT);
   pinMode(Func4, OUTPUT);
+  randomSeed(analogRead(1));
 
   if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)){
   while (true){
-    digitalWrite(LED_BUILTIN, HIGH); delay(200);
+    digitalWrite(LED_BUILTIN, HIGH); delay(50);
     digitalWrite(LED_BUILTIN, LOW); delay(200);
     }
   }
@@ -65,20 +66,20 @@ void setup() {
 
   delay(100);
 
-  for (int i = 0; i < 200; i++) {
+  for (int i = 0; i < 200; i++){
     delay(20);
     digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
-    if (button_is_pressed(btn1)) {
+    if (button_is_pressed(btn1)){
       digitalWrite(LED_BUILTIN, LOW);
       break;
     }
-    if (button_is_pressed(btn4)) {
+    if (button_is_pressed(btn4)){
       digitalWrite(Func1, HIGH);
     } 
-    else if (button_is_pressed(btn2)) {
+    else if (button_is_pressed(btn2)){
       digitalWrite(Func3, HIGH);
     }
-    else if (button_is_pressed(btn3)) {
+    else if (button_is_pressed(btn3)){
     digitalWrite(LED_BUILTIN, LOW);
     calculator();
     break;
@@ -86,8 +87,8 @@ void setup() {
   }
 }
 
-bool button_is_pressed(int btn) {
-  if (digitalRead(btn) == LOW) {
+bool button_is_pressed(int btn){
+  if (digitalRead(btn) == LOW){
     delay(100);
     return true;
   }
@@ -96,11 +97,11 @@ bool button_is_pressed(int btn) {
 
 void(* reset) (void) = 0;
 
-void wakeUp() {
+void wakeUp(){
     wakeup = true;
 }
 
-void goToSleep() {
+void goToSleep(){
 
     display.ssd1306_command(SSD1306_DISPLAYOFF);
 
@@ -122,11 +123,11 @@ void goToSleep() {
 
 }
 
-void activateFunc(const byte func, int blinkTime = 500) {
+void activateFunc(const byte func, int blinkTime = 500){
   bool blink = false;
   bool keepOn = false;
 
-  while (true) {
+  while (true){
     display.clearDisplay();
     display.setTextSize(1);
     display.setTextColor(SSD1306_WHITE);
@@ -146,36 +147,36 @@ void activateFunc(const byte func, int blinkTime = 500) {
     display.display();
     
     if (!blink) delay(50);
-    if (keepOn) {
+    if (keepOn){
       digitalWrite(func, HIGH);
     } 
-    else if (blink) {
+    else if (blink){
       digitalWrite(func, !digitalRead(func));
       delay(blinkTime / 2);
     } 
-    else {
+    else{
       if (button_is_pressed(btn1)) digitalWrite(func, HIGH);
       else digitalWrite(func, LOW);
     }
 
-    if (button_is_pressed(btn2)) {
+    if (button_is_pressed(btn2)){
       keepOn = !keepOn;
       if (keepOn) blink = false;
     } 
-    else if (button_is_pressed(btn3)) {
+    else if (button_is_pressed(btn3)){
       blink = !blink;
       if (blink) keepOn = false;
     }
-    else if (button_is_pressed(btn4)) {
+    else if (button_is_pressed(btn4)){
       return;
     delay(200);
     }
   }
 }
 
-void watchFuncs(void) {
+void watchFuncs(void){
   delay(50);
-  while (true) {
+  while (true){
     display.clearDisplay();
     display.setTextSize(1);
     display.setCursor(0, 20);
@@ -194,17 +195,17 @@ void watchFuncs(void) {
 
     delay(50);
 
-    if (button_is_pressed(btn2)) {
+    if (button_is_pressed(btn2)){
       selectedPart++;
       if (selectedPart > totalParts) selectedPart = 1;
     } 
-    else if (button_is_pressed(btn1)) {
+    else if (button_is_pressed(btn1)){
       selectedPart--;
       if (selectedPart < 1) selectedPart = totalParts;
     } 
     else if (button_is_pressed(btn4)) return;
-    else if (button_is_pressed(btn3)) {
-      switch (selectedPart) {
+    else if (button_is_pressed(btn3)){
+      switch (selectedPart){
         case 1:
           activateFunc(Func1);
           delay(500);
@@ -223,8 +224,8 @@ void watchFuncs(void) {
   }
 }
 
-void calculator(void) {
-    const char* options[] = {"1","2","3","4","5","6","7","8","9","0",".","+","-","*","/","^","r","%","(",")"};
+void calculator(void){
+    const char* options[] ={"1","2","3","4","5","6","7","8","9","0",".","+","-","*","/","^","r","%","(",")"};
     const int numOptions = sizeof(options)/sizeof(options[0]);
     int currentOption = 0;
     char expr[25] = "";
@@ -234,16 +235,16 @@ void calculator(void) {
     double result = 0;
     bool error = false;
 
-    while (!done) {
+    while (!done){
         display.clearDisplay();
 
         display.setTextSize(2);
         display.setCursor(0, 0);
-        if (showResult) {
-            if (error) {
+        if (showResult){
+            if (error){
                 display.print("Error!");
             } 
-            else {
+            else{
                 display.print("");
                 display.print(result, 6);
             }
@@ -253,17 +254,17 @@ void calculator(void) {
         int startX = 0;
         int yOptions = 20;
         int spacing = 16;
-        for (int i = 0; i < numOptions; i++) {
+        for (int i = 0; i < numOptions; i++){
             int x = startX + (i % 7) * spacing;
             int y = yOptions + (i / 7) * 10;
-            if (i == currentOption) {
+            if (i == currentOption){
                 display.fillRect(x-1, y-1, 12, 10, SSD1306_WHITE);
                 display.setTextColor(SSD1306_BLACK);
                 display.setCursor(x, y);
                 display.print(options[i]);
                 display.setTextColor(SSD1306_WHITE);
             } 
-            else {
+            else{
                 display.setCursor(x, y);
                 display.print(options[i]);
             }
@@ -275,29 +276,29 @@ void calculator(void) {
 
         display.display();
 
-        if (button_is_pressed(btn1)) {
+        if (button_is_pressed(btn1)){
             currentOption = (currentOption + 1) % numOptions;
             delay(100);
         }
-        else if (button_is_pressed(btn2)) {
-            if (showResult) {
+        else if (button_is_pressed(btn2)){
+            if (showResult){
                 expr[0] = '\0';
                 exprLen = 0;
                 showResult = false;
             }
-            if (exprLen < 24) {
+            if (exprLen < 24){
                 strcat(expr, options[currentOption]);
                 exprLen = strlen(expr);
             }
             delay(200);
         }
-        else if (button_is_pressed(btn3)) {
+        else if (button_is_pressed(btn3)){
             error = false;
             result = evaluateExpression(expr, error);
             showResult = true;
             delay(500);
         }
-        else if (button_is_pressed(btn4)) {
+        else if (button_is_pressed(btn4)){
             delay(200);
             return;
         }
@@ -307,20 +308,20 @@ void calculator(void) {
 
 double parsePrimary(const char* &s, bool &error);
 
-double parseNumber(const char* &s, bool &error) {
+double parseNumber(const char* &s, bool &error){
     double value = 0.0;
     bool hasDecimal = false;
     double frac = 0.1;
-    while (isdigit(*s) || *s == '.') {
-        if (*s == '.') {
-            if (hasDecimal) { error = true; return 0; }
+    while (isdigit(*s) || *s == '.'){
+        if (*s == '.'){
+            if (hasDecimal){ error = true; return 0; }
             hasDecimal = true;
         } 
-        else if (hasDecimal) {
+        else if (hasDecimal){
             value += (*s - '0') * frac;
             frac *= 0.1;
         } 
-        else {
+        else{
             value = value * 10 + (*s - '0');
         }
         s++;
@@ -328,12 +329,12 @@ double parseNumber(const char* &s, bool &error) {
     return value;
 }
 
-double parseFactor(const char* &s, bool &error) {
+double parseFactor(const char* &s, bool &error){
     while (*s == ' ') s++;
-    if (*s == '+') { s++; return parseFactor(s, error); }
-    if (*s == '-') { s++; return -parseFactor(s, error); }
-    if (*s == 'r') { s++; double val = parseFactor(s, error); return val<0?(error=true,0):sqrt(val); }
-    if (*s == '(') {
+    if (*s == '+'){ s++; return parseFactor(s, error); }
+    if (*s == '-'){ s++; return -parseFactor(s, error); }
+    if (*s == 'r'){ s++; double val = parseFactor(s, error); return val<0?(error=true,0):sqrt(val); }
+    if (*s == '('){
         s++;
         double val = parsePrimary(s, error);
         if (*s == ')') s++;
@@ -343,9 +344,9 @@ double parseFactor(const char* &s, bool &error) {
     return parseNumber(s, error);
 }
 
-double parseExponent(const char* &s, bool &error) {
+double parseExponent(const char* &s, bool &error){
     double left = parseFactor(s, error);
-    while (*s == '^') {
+    while (*s == '^'){
         s++;
         double right = parseFactor(s, error);
         left = pow(left, right);
@@ -353,21 +354,21 @@ double parseExponent(const char* &s, bool &error) {
     return left;
 }
 
-double parseTerm(const char* &s, bool &error) {
+double parseTerm(const char* &s, bool &error){
     double left = parseExponent(s, error);
-    while (*s == '*' || *s == '/' || *s == '%') {
+    while (*s == '*' || *s == '/' || *s == '%'){
         char op = *s++;
         double right = parseExponent(s, error);
         if (op == '*') left *= right;
-        else if (op == '/') { if (right == 0) { error = true; return 0; } left /= right; }
-        else if (op == '%') { if (right == 0) { error = true; return 0; } left = fmod(left, right); }
+        else if (op == '/'){ if (right == 0){ error = true; return 0; } left /= right; }
+        else if (op == '%'){ if (right == 0){ error = true; return 0; } left = fmod(left, right); }
     }
     return left;
 }
 
-double parsePrimary(const char* &s, bool &error) {
+double parsePrimary(const char* &s, bool &error){
     double left = parseTerm(s, error);
-    while (*s == '+' || *s == '-') {
+    while (*s == '+' || *s == '-'){
         char op = *s++;
         double right = parseTerm(s, error);
         if (op == '+') left += right;
@@ -376,19 +377,19 @@ double parsePrimary(const char* &s, bool &error) {
     return left;
 }
 
-double evaluateExpression(const char* expr, bool &error) {
+double evaluateExpression(const char* expr, bool &error){
     const char* s = expr;
     error = false;
     double result = parsePrimary(s, error);
-    while (*s && !error) {
+    while (*s && !error){
         if (!isspace(*s)) error = true;
         s++;
     }
     return result;
 }
 
-void unitConverter(void) {
-    const char* types[] = {
+void unitConverter(void){
+    const char* types[] ={
         "cm->in", "in->cm",
         "C->F",   "F->C",
         "kg->lb", "lb->kg",
@@ -396,7 +397,7 @@ void unitConverter(void) {
         "g->oz",  "oz->g",
         "L->gal", "gal->L"
     };
-    enum {LEN=0, LEN2, TEMP, TEMP2, WT, WT2, KM_MI, MI_KM, G_OZ, OZ_G, L_GAL, GAL_L};
+    enum{LEN=0, LEN2, TEMP, TEMP2, WT, WT2, KM_MI, MI_KM, G_OZ, OZ_G, L_GAL, GAL_L};
     const int numTypes = sizeof(types) / sizeof(types[0]);
     int selectedType = 0;
     float inputValue = 0;
@@ -424,7 +425,7 @@ void unitConverter(void) {
 
         display.display();
 
-        if (button_is_pressed(btn3)) {
+        if (button_is_pressed(btn3)){
             selectedType = (selectedType + 1) % numTypes;
             enteringValue = true;
             delay(200);
@@ -437,9 +438,9 @@ void unitConverter(void) {
             if (enteringValue) inputValue++;
             delay(100);
         } 
-        else if (button_is_pressed(btn4)) {
-            if (enteringValue) {
-                switch (selectedType) {
+        else if (button_is_pressed(btn4)){
+            if (enteringValue){
+                switch (selectedType){
                     case LEN:   result = inputValue / 2.54; break;         // cm to in
                     case LEN2:  result = inputValue * 2.54; break;         // in to cm
                     case TEMP:  result = inputValue * 9.0 / 5.0 + 32.0; break; // C to F
@@ -456,7 +457,7 @@ void unitConverter(void) {
                 enteringValue = false;
                 delay(500);
             } 
-            else {
+            else{
                 return;
             }
         }
@@ -465,61 +466,62 @@ void unitConverter(void) {
 }
 
 void randomInt(){
-  randomSeed(analogRead(1));
   int range = 1;
-  while (true) {
+  while (true){
     display.clearDisplay();
     display.setTextSize(2);
     display.setCursor(0, 0);
     display.println("Random Int");
-    display.setCursor(10, 32);
-    display.print("Range: 0 - ");
+    display.setCursor(30, 25);
+    display.print("Range:");
+    display.setCursor(30, 45);
+    display.print(("0 - "));
     display.print(range);
     display.display();
     delay(100);
-    if (button_is_pressed(btn1)) {
+    if (button_is_pressed(btn1)){
       range += 10;
       delay(200);
     } 
-    else if (button_is_pressed(btn2)) {
-      if (range > 0) range--;
+    else if (button_is_pressed(btn2)){
+      range--;
       delay(200);
     } 
-    else if (button_is_pressed(btn3)) {
+    else if (button_is_pressed(btn3)){
       int randNumber = random(0, range + 1);
       display.clearDisplay();
       display.setTextSize(4);
-      display.setCursor(40, 24);
+      display.setCursor(10, 25);
       display.print(randNumber);
       display.display();
       delay(2000);
     } 
-    else if (button_is_pressed(btn4)) {
+    else if (button_is_pressed(btn4)){
       return;
     }
   }
 }
 
-void dinoRunner() {
-  int dinoY = 30, velocity = 0, gravity = 2, jumpPower = -12;
+void dinoRunner(){
+  int dinoY = 40, velocity = 0, gravity = 2, jumpPower = -12;
   int cactusX = 128, cactusY = 40, cactusW = 6, cactusH = 16;
   bool jumping = false, gameOver = false;
   unsigned long lastMove = millis(), lastCactusMove = millis();
   int score = 0;
 
-  while (true) {
+  while (true){
     if (button_is_pressed(btn4)) return;
 
-    if (!gameOver && button_is_pressed(btn3) && !jumping) {
+    if (!gameOver && button_is_pressed(btn3) && !jumping){
       velocity = jumpPower;
       jumping = true;
     }
 
-    if (!gameOver && millis() - lastMove > 40) {
-      if (jumping) {
+    if (!gameOver && millis() - lastMove > 40){
+      if (jumping){
         dinoY += velocity;
         velocity += gravity;
-        if (dinoY >= 40) {
+        if (dinoY >= 40){
           dinoY = 40;
           jumping = false;
         }
@@ -527,22 +529,22 @@ void dinoRunner() {
       lastMove = millis();
     }
 
-    if (!gameOver && millis() - lastCactusMove > 24) {
+    if (!gameOver && millis() - lastCactusMove > 24){
       cactusX -= 3;
-      if (cactusX < -cactusW) {
-        cactusX = 128;
+      if (cactusX < -cactusW){
+        cactusX = 128 + random(-30, 50);
         score++;
       }
       lastCactusMove = millis();
     }
 
-    if (!gameOver && cactusX < 20 && cactusX + cactusW > 10 && dinoY + 16 > cactusY) {
+    if (!gameOver && cactusX < 20 && cactusX + cactusW > 10 && dinoY + 16 > cactusY){
       gameOver = true;
     }
 
     display.clearDisplay();
     display.setTextSize(2);
-    display.setCursor(80,0);
+    display.setCursor(10,0);
     display.print(score);
 
     display.drawLine(0, 56, 128, 56, SSD1306_WHITE);
@@ -551,13 +553,15 @@ void dinoRunner() {
 
     display.fillRect(cactusX, cactusY, cactusW, cactusH, SSD1306_WHITE);
 
-    if (gameOver) {
+    if (gameOver){
+      delay(500);
       display.setTextSize(2);
-      display.setCursor(5, 20);
+      display.setCursor(5, 30);
+      display.clearDisplay();
       display.print("Game Over!");
       display.setCursor(5, 35);
       display.display();
-      delay(3000);
+      delay(1500);
       return;
     }
     display.display();
@@ -569,14 +573,15 @@ void bomb(){
     int interval = 1000;
     int minInterval = 75;
     int steps = 30;
+    display.clearDisplay();
 
-    for (int i = 0; i < steps; i++) {
+    for (int i = 0; i < steps; i++){
         digitalWrite(LED_BUILTIN, HIGH);
         delay(60);
         digitalWrite(LED_BUILTIN, LOW);
 
         delay(interval - 60);
-
+        
         interval = interval - (interval - minInterval) / 6;
         if (interval < minInterval) interval = minInterval;
     }
@@ -585,11 +590,11 @@ void bomb(){
     digitalWrite(Func1, LOW);
 }
 
-void loop() {
+void loop(){
   display.clearDisplay();
   display.setTextSize(2);
   display.setCursor(0, 0);
-  display.print("Menu     ");
+  display.print("HomePage ");
   display.print(selectedFunction);
 
   display.setTextSize(1);
@@ -606,18 +611,18 @@ void loop() {
 
   delay(100);
 
-  if (button_is_pressed(btn2)) {
+  if (button_is_pressed(btn2)){
     selectedFunction++;
     if (selectedFunction > totalFunctions) selectedFunction = 1;
   } 
-  else if (button_is_pressed(btn1)) {
+  else if (button_is_pressed(btn1)){
     selectedFunction--;
-    if (selectedFunction < 1) {
+    if (selectedFunction < 1){
       selectedFunction = totalFunctions;
     }
   } 
-  else if (button_is_pressed(btn3)) {
-    switch (selectedFunction) {
+  else if (button_is_pressed(btn3)){
+    switch (selectedFunction){
       case 1:
         watchFuncs();
         break;
@@ -639,7 +644,8 @@ void loop() {
       case 7:
         display.clearDisplay();
         display.display();
-        while (button_is_pressed(btn3)) delay(10); // Ensure interrupt does not trigger immediately
+        // Ensure interrupt does not trigger immediately
+        while (button_is_pressed(btn3)) delay(10);
         goToSleep();
         break;
     }
