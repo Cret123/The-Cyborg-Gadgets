@@ -1,7 +1,7 @@
 # The Watch Extensions
 
-This repository contains a series of Arduino programs designed for a customizable multitool watch extension. 
-The watches are split into three generations:
+This repository contains a series of programs designed for a customizable multitool watch extension. 
+The watches are split into various generations:
 
 - The single Generation 0 gadget that was built is a simple AA battery powered multitool using crocodile clips rather than switches to create a simple multitool gadget. 
 While not really a watch, it did provide the inspiration needed for this project and is therefore counted as the first watch extension.
@@ -21,5 +21,5 @@ allowing for more compact circuitry.
 3. Open the program.
 4. Connect your hardware according to the pins at the top of the file.
 5. Install required libraries via the Arduino Library Manager.
-6. Upload the sketch to your Arduino Pro Mini.
-7. Stick the arduino to your watch. Initially done by gluing magnets to the watch and arduino, to make it detachable.
+6. Upload the sketch to an Arduino Pro Mini.
+7. Stick the arduino to a watch. Initially done by gluing magnets to the watch and arduino, to make it detachable.
