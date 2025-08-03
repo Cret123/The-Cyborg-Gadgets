@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="297mm"
+   height="210mm"
+   viewBox="0 0 297 210"
+   version="1.1"
+   id="svg5"
+   inkscape:version="1.1.2 (0a00cf5339, 2022-02-04)"
+   sodipodi:docname="label.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview7"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:document-units="mm"
+     showgrid="false"
+     inkscape:zoom="0.4187009"
+     inkscape:cx="396.4644"
+     inkscape:cy="562.45401"
+     inkscape:window-width="1310"
+     inkscape:window-height="704"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1" />
+  <defs
+     id="defs2">
+    <rect
+       x="692.37598"
+       y="587.22369"
+       width="643.06049"
+       height="554.27209"
+       id="rect61028" />
+  </defs>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <text
+       xml:space="preserve"
+       style="font-size:15.5032px;line-height:1.25;font-family:sans-serif;stroke-width:0.726714"
+       x="52.424816"
+       y="63.261997"
+       id="text3267"
+       transform="scale(0.99772913,1.002276)"><tspan
+         sodipodi:role="line"
+         id="tspan3265"
+         style="stroke-width:0.726714"
+         x="52.424816"
+         y="63.261997"> Gen 2,</tspan><tspan
+         sodipodi:role="line"
+         style="stroke-width:0.726714"
+         x="52.424816"
+         y="82.640999"
+         id="tspan7427">Watch 8</tspan></text>
+    <path
+       style="fill:none;stroke:#000000;stroke-width:0.274788px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="M 83.770735,47.295879 87.68354,21.588397 v 0"
+       id="path13631" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:0.337148px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="M 68.435068,91.755707 48.210354,118.31836"
+       id="path14561" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:0.321319px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 111.09199,90.151238 18.36664,31.741392"
+       id="path14676" />
+    <text
+       xml:space="preserve"
+       style="font-size:8.46667px;line-height:1.25;font-family:sans-serif;stroke-width:0.264583"
+       x="18.581936"
+       y="130.31854"
+       id="text18808"><tspan
+         sodipodi:role="line"
+         id="tspan18806"
+         style="font-size:8.46667px;stroke-width:0.264583"
+         x="18.581936"
+         y="130.31854">Type of gadget</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:8.46667px;line-height:1.25;font-family:sans-serif;stroke-width:0.264583"
+       x="96.315186"
+       y="133.41943"
+       id="text26928"><tspan
+         sodipodi:role="line"
+         id="tspan26926"
+         style="font-size:8.46667px;stroke-width:0.264583"
+         x="96.315186"
+         y="133.41943">Induvidual number</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:8.46667px;line-height:1.25;font-family:sans-serif;stroke-width:0.264583"
+       x="72.596458"
+       y="16.965433"
+       id="text47572"><tspan
+         sodipodi:role="line"
+         id="tspan47570"
+         style="stroke-width:0.264583"
+         x="72.596458"
+         y="16.965433">Generation</tspan></text>
+    <text
+       xml:space="preserve"
+       transform="scale(0.26458333)"
+       id="text61026"
+       style="font-size:32px;line-height:1.25;font-family:sans-serif;white-space:pre;shape-inside:url(#rect61028)" />
+  </g>
+</svg>

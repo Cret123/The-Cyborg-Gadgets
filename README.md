@@ -1,25 +1,30 @@
-# The Watch Extensions
+# The Cyborg Gadgets
 
-This repository contains a series of programs designed for a customizable multitool watch extension. 
-The watches are split into various generations:
+A project to develop non-invasive, painless body enhancements. 
+Beneficial to have all essential tools with you, make the impression to be very smart, and deter adversaries of low intelligence. 
 
-- The single Generation 0 gadget that was built is a simple AA battery powered multitool using crocodile clips rather than switches to create a simple multitool gadget. 
-While not really a watch, it did provide the inspiration needed for this project and is therefore counted as the first watch extension.
-- Generation 1 featured a simple parallel circuit on a circuit board, introducing switches and using a LiPo battery for size. 
-- Generation 2 still retained the same circuit, however was built with wires rather than a prototype board. 
-This enhanced its lifespan from roughly 3 weeks to more than 2 years, as well as making assembly easier. 
-- Currently in Generation 3, watches use an arduino to transform an everyday watch into a smart, 
-multifunctional spy gadget, with the surprising side effect of saving the amount of power used.
-- Generation 4 watches will still have the same user experience as Gen 3 watches, however will use a more powerful processor and have fully customised boards,
-allowing for more compact circuitry.
-- Finally, 5th Generation watches will use ESP32-C3's rather than arduinos, thereby drastically improving capabilities while still retaining its small size.
+This repository contains a series of programs designed for a customizable multitool cyborg extension. 
 
-## Usage
+The gadgets are all labeled, as seen in the example below:
 
-1. Clone or download this repository.
-2. Install the Arduino IDE.
-3. Open the program.
-4. Connect your hardware according to the pins at the top of the file.
-5. Install required libraries via the Arduino Library Manager.
-6. Upload the sketch to an Arduino Pro Mini.
-7. Stick the arduino to a watch. Initially done by gluing magnets to the watch and arduino, to make it detachable.
+![](data/label.png)
+
+- **Generation**: The cyborg tools are split into successive generations:
+
+    - The single Generation 0 gadget is a simple AA battery powered multitool using crocodile clips rather than switches to create a simple multitool gadget. 
+    While only a crude prototype, it did provide the inspiration for this project and is therefore counted as the first cyborg extension.
+    - Generation 1 featured a simple parallel circuit on a circuit board, introducing switches and using a LiPo battery for size. 
+    - Second generation still retained the same circuit, however was built with wires rather than a prototype board. 
+    This enhanced its lifespan from roughly 3 weeks to more than 2 years, while also making assembly easier. Currently they are the largest generation, with over 12 known gadgets.
+    - Generation 3 still had a similar aesthetics and functions to its former generation, however introduced a more complex component: an SA56 7-segment display. This improved communication, however this involved adding too many unneccesary wires, so consequently it is a very small generation.  
+    - Currently in [Generation 4](./Generation_4/Generation_4.md), the cyborg extension relies on the Arduino platform to drastically enhance capabilities to include smart, multifunctional spy features. Surprisingly, energy consumption is reduced.
+    - Fifth generation cyborg gadgets will switch from [AVR microcontrollers]() to [ESP32](https://www.espressif.com/en/products/socs/esp32-c3) based platforms, significantly improving capabilities while retaining small form factor.
+
+- **Type of gadget**: While these gadgets started off as only watch extensions, slowly they started forming around other areas such as:
+
+    - A Watch
+    - A Badge
+    - A Glove
+    - A Bag
+
+- **Induvidual number**: Within the Generation and the type of gadget, each induvidual gadget is given a unique number, usually in order of production.
