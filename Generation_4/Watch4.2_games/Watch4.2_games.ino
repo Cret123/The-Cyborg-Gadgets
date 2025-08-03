@@ -57,7 +57,7 @@ void setup() {
   display.setCursor(20, 20);
   display.print("Watch 2");
   display.setCursor(30, 50);
-  display.print("Gen 3");
+  display.print("Gen 4");
   display.setTextSize(1);
   display.setCursor(55, 40);
   display.print("of");

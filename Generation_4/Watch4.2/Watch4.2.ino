@@ -1,4 +1,4 @@
-// Initial OLED display watch
+// Watch 4.2: Initial OLED display watch
 
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
@@ -13,13 +13,16 @@
 #define SCREEN_HEIGHT 64
 #define OLED_RESET -1
 
+#define totalFunctions 8
+#define totalParts 4
+
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
-int selectedFunction = 1;
-const int totalFunctions = 7;
+unsigned long lastActivityTime = 0;
+const unsigned long inactivityPeriod = 30000;
 
+int selectedFunction = 1;
 int selectedPart = 1;
-const int totalParts = 4;
 
 const byte btn1 = 6;
 const byte btn2 = 4;
@@ -58,7 +61,7 @@ void setup(){
   display.setCursor(20, 20);
   display.print("Watch 2");
   display.setCursor(30, 50);
-  display.print("Gen 3");
+  display.print("Gen 4");
   display.setTextSize(1);
   display.setCursor(55, 40);
   display.print("of");
@@ -87,12 +90,25 @@ void setup(){
   }
 }
 
-bool button_is_pressed(int btn){
-  if (digitalRead(btn) == LOW){
-    delay(100);
-    return true;
-  }
-  return false;
+bool button_is_pressed(const byte btn){
+    unsigned long now = millis();
+
+    if (now - lastActivityTime > inactivityPeriod) {
+        display.clearDisplay();
+        display.display();
+        goToSleep();
+        lastActivityTime = millis();
+        // Ensure interrupt does not trigger immediately
+        while (button_is_pressed(btn3));
+        return false;
+    }
+
+    if (digitalRead(btn) == LOW) {
+        delay(50);
+        lastActivityTime = millis();
+        return true;
+    }
+    return false;
 }
 
 void(* reset) (void) = 0;
@@ -117,7 +133,7 @@ void goToSleep(){
 
     sleep_disable();
     detachInterrupt(digitalPinToInterrupt(btn3));
-
+ 
     ADCSRA |= (1 << ADEN);
     display.ssd1306_command(SSD1306_DISPLAYON);
 
@@ -502,72 +518,59 @@ void randomInt(){
   }
 }
 
-void dinoRunner(){
-  int dinoY = 40, velocity = 0, gravity = 2, jumpPower = -12;
-  int cactusX = 128, cactusY = 40, cactusW = 6, cactusH = 16;
-  bool jumping = false, gameOver = false;
-  unsigned long lastMove = millis(), lastCactusMove = millis();
-  int score = 0;
-
+void stopWatch(){
+  unsigned long stopwatchTime = 0;
+  bool stopwatchRunning = false;
+  unsigned long stopwatchLast = 0;
   while (true){
-    if (button_is_pressed(btn4)) return;
-
-    if (!gameOver && button_is_pressed(btn3) && !jumping){
-      velocity = jumpPower;
-      jumping = true;
-    }
-
-    if (!gameOver && millis() - lastMove > 40){
-      if (jumping){
-        dinoY += velocity;
-        velocity += gravity;
-        if (dinoY >= 40){
-          dinoY = 40;
-          jumping = false;
-        }
-      }
-      lastMove = millis();
-    }
-
-    if (!gameOver && millis() - lastCactusMove > 24){
-      cactusX -= 3;
-      if (cactusX < -cactusW){
-        cactusX = 128 + random(-30, 50);
-        score++;
-      }
-      lastCactusMove = millis();
-    }
-
-    if (!gameOver && cactusX < 20 && cactusX + cactusW > 10 && dinoY + 16 > cactusY){
-      gameOver = true;
-    }
-
     display.clearDisplay();
     display.setTextSize(2);
-    display.setCursor(10,0);
-    display.print(score);
+    display.setCursor(0, 0);
+    display.print("StopWatch");
 
-    display.drawLine(0, 56, 128, 56, SSD1306_WHITE);
-
-    display.fillRect(10, dinoY, 10, 16, SSD1306_WHITE);
-
-    display.fillRect(cactusX, cactusY, cactusW, cactusH, SSD1306_WHITE);
-
-    if (gameOver){
-      delay(500);
-      display.setTextSize(2);
-      display.setCursor(5, 30);
-      display.clearDisplay();
-      display.print("Game Over!");
-      display.setCursor(5, 35);
-      display.display();
-      delay(1500);
-      return;
+    unsigned long t = stopwatchTime;
+    if (stopwatchRunning) {
+      unsigned long now = millis();
+      t += now - stopwatchLast;
     }
+    byte m = (t / 1000) / 60;
+    byte s = (t / 1000) % 60;
+    char buf[9];
+    sprintf(buf, "%02d:%02d.%01d", m, s, (int)((t % 1000) / 100));
+    
+    display.setCursor(0, 30);
+    display.print(buf);
+  
+    display.setTextSize(1);
+    display.setCursor(0, 55);
+    display.print("Btn1: Start/Stop  Btn2: Reset");
+  
     display.display();
-    delay(10);
+  
+    if (button_is_pressed(btn1)) {
+      if (!stopwatchRunning) {
+        stopwatchLast = millis();
+        stopwatchRunning = true;
+      } 
+      else {
+        stopwatchTime += millis() - stopwatchLast;
+        stopwatchRunning = false;
+      }
+      delay(200);
+    }
+    else if (button_is_pressed(btn2)) {
+      stopwatchTime = 0;
+      if (stopwatchRunning) stopwatchLast = millis();
+      delay(200);
+    }
+    else if (button_is_pressed(btn4)) return;
+    if (!stopwatchRunning && stopwatchTime > 0) stopwatchLast = millis();
   }
 }
+
+void timer(){
+  
+  }
 
 void bomb(){
     int interval = 1000;
@@ -594,18 +597,18 @@ void loop(){
   display.clearDisplay();
   display.setTextSize(2);
   display.setCursor(0, 0);
-  display.print("HomePage ");
+  display.print("Home     ");
   display.print(selectedFunction);
 
   display.setTextSize(1);
   display.setCursor(0, 20);
-  display.print("1. Output   5. Runner");
+  display.print("1. Output  5. StpWtch");
   display.setCursor(0, 32);
-  display.print("2. Maths  6. Detonate");
+  display.print("2. Maths   6. Timer");
   display.setCursor(0, 44);
-  display.print("3. Convert   7. Power");
+  display.print("3. Convert 7. Detonate");
   display.setCursor(0, 56);
-  display.print("4. Random");
+  display.print("4. Random  8. Power");
 
   display.display();
 
@@ -636,16 +639,19 @@ void loop(){
         randomInt();
         break;
       case 5:
-        dinoRunner();
+        stopWatch();
         break;
       case 6:
-        bomb();
+        timer();
         break;
       case 7:
+        bomb();
+        break;
+      case 8:
         display.clearDisplay();
         display.display();
         // Ensure interrupt does not trigger immediately
-        while (button_is_pressed(btn3)) delay(10);
+        while (button_is_pressed(btn3));
         goToSleep();
         break;
     }

@@ -1,4 +1,4 @@
-\\ SA56 7 section display watch
+// SA56 7 section display watch
 
 const byte btn1 = 2;
 const byte btn2 = 3;

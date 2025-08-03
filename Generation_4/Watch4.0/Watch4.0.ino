@@ -1,4 +1,4 @@
-// Watch 3.0: Initial Generation 3 watch, communicates via neopixel
+// Watch 4.0: Initial Generation 4 watch, communicates via neopixel
 
 #include <Adafruit_NeoPixel.h>
 #include <avr/sleep.h>
@@ -7,23 +7,28 @@
 
 int Wheel(byte WheelPos);
 
-#define NEOPIXEL_PIN 9
-#define NEOPIXEL_COUNT 1
+#define NEOPIXEL_PIN 10
+#define NUM_NEOPIXEL 1
 
-Adafruit_NeoPixel pixel(NEOPIXEL_COUNT, NEOPIXEL_PIN, NEO_GRB + NEO_KHZ800);
+Adafruit_NeoPixel pixel(NUM_NEOPIXEL, NEOPIXEL_PIN, NEO_GRB + NEO_KHZ800);
 
-const byte btn1 = 2;
-const byte btn2 = 3;
-const byte btn3 = 4;
-const byte btn4 = 5;
+const byte btn1 = 3;
+const byte btn2 = 2;
+const byte btn3 = 5;
+const byte btn4 = 6;
 
-const byte Func1 = 6;
-const byte Func2 = 7;
-const byte Func3 = 8;
-const byte Func4 = 9;
+const byte Func1 = 8;
+const byte Func2 = 9;
+const byte Func3 = 11;
+const byte Func4 = 7;
 
 int selectedFunction = 1;
 const int totalFunctions = 5;
+
+int selectedPart = 1;
+const int totalParts = 4;
+
+const byte resetPin = 12;
 
 volatile bool wakeup = false;
 
@@ -36,6 +41,7 @@ void setup(){
   pinMode(Func2, OUTPUT);
   pinMode(Func3, OUTPUT);
   pinMode(Func4, OUTPUT);
+  pinMode(resetPin, OUTPUT);
   pixel.begin();
   pixel.clear();
   for (int i = 0; i <= 255; i++) {
@@ -47,7 +53,7 @@ void setup(){
   pixel.clear();
   pixel.show();
   delay(200);
-  indicateFunction(selectedFunction);
+  showFunction(selectedFunction);
 }
 
 bool button_is_pressed(int btn){
@@ -58,7 +64,13 @@ bool button_is_pressed(int btn){
   return false;
 }
 
-void(* reset) (void) = 0;
+void reset(){
+  for (int pin=2; pin<=13; pin++){
+    digitalWrite(pin, LOW);
+    }
+  digitalWrite(resetPin, HIGH);
+  digitalWrite(resetPin, LOW);
+  }
 
 void wakeUp(){
     wakeup = true;
@@ -104,65 +116,105 @@ int Wheel(int WheelPos) {
   return pixel.Color(WheelPos * 3, 255 - WheelPos * 3, 0);
 }
 
-void indicateFunction(int funcNum){
-  uint32_t colors[] ={
-    pixel.Color(255, 255, 255), // 1: Output Control
-    pixel.Color(255, 0, 0),     // 2: Color Picker
-    pixel.Color(0, 255, 0),     // 3: Bomb/Detonate
-    pixel.Color(0, 0, 255),     // 4: Sequence Game
-    pixel.Color(255, 255, 0)    // 5: Sleep Mode
+void showFunction(int funcNum){
+  uint32_t colors[] = {
+    pixel.Color(255, 255, 255),     // 1: Output Control
+    pixel.Color(0, 255, 0),        // 2: Color Picker
+    pixel.Color(255, 0, 0),       // 3: Bomb/Detonate
+    pixel.Color(255, 255, 0),    // 4: Random Int
+    pixel.Color(0, 0, 150)      // 5: Sleep Mode
   };
   pixel.clear();
   pixel.setPixelColor(0, colors[funcNum - 1]);
   pixel.show();
 }
 
-void outputs(){
-  int selected = 1;
-  const int total = 4;
-  const uint32_t outColors[] = {
-    pixel.Color(255,255,255), // Func1: White
-    pixel.Color(255,0,0),     // Func2: Red
-    pixel.Color(144,99,205),  // Func3: Violet
-    pixel.Color(0,255,0)      // Func4: Green
-  };
-  const uint8_t outPins[] = {Func1, Func2, Func3, Func4};
+void activateOutput(const byte func, int blinkTime = 500){
+  bool blink = false;
+  bool keepOn = false;
 
   while (true){
-    blinkColor(outColors[selected-1], 1, 200, 300);
+    
+    if (!blink) delay(50);
+    if (keepOn){
+      digitalWrite(func, HIGH);
+    } 
+    else if (blink){
+      digitalWrite(func, !digitalRead(func));
+      delay(blinkTime / 2);
+    } 
+    else {
+      if (button_is_pressed(btn1)) digitalWrite(func, HIGH);
+      else digitalWrite(func, LOW);
+    }
 
     if (button_is_pressed(btn2)){
-      selected++; if (selected > total) selected = 1;
-      delay(150);
-    } else if (button_is_pressed(btn1)){
-      selected--; if (selected < 1) selected = total;
-      delay(150);
-    } else if (button_is_pressed(btn3)){
-      uint8_t pin = outPins[selected-1];
-      bool isOn = digitalRead(pin);
-      digitalWrite(pin, !isOn);
-      blinkColor(outColors[selected-1], !isOn ? 2 : 1, 250, 100);
-      delay(200);
-    } else if (button_is_pressed(btn4)){
-      for (int i=0;i<total;++i) digitalWrite(outPins[i], LOW);
-      pixel.clear(); pixel.show();
-      delay(200);
-      return;
+      keepOn = !keepOn;
+      if (keepOn) blink = false;
+    } 
+    else if (button_is_pressed(btn3)){
+      blink = !blink;
+      if (blink) keepOn = false;
     }
-    delay(50);
+    else if (button_is_pressed(btn4)){
+      return;
+    delay(200);
+    }
   }
 }
 
-void colorPicker(){
-  int r = 128, g = 0, b = 0;
+void outputs(void){
+  delay(50);
+  int outputColours[] = {
+    pixel.Color(255, 255, 255),    // 1: White LED
+    pixel.Color(255, 0, 0),       // 2: Laser
+    pixel.Color(250, 100, 0),    // 3: Built In LED
+    pixel.Color(0, 255, 0),     // 4: 
+  };
+  
+  while (true){
+
+    pixel.setPixelColor(0, outputColours[selectedPart-1]);
+    delay(50);
+
+    if (button_is_pressed(btn2)){
+      selectedPart++;
+      if (selectedPart > totalParts) selectedPart = 1;
+    } 
+    else if (button_is_pressed(btn1)){
+      selectedPart--;
+      if (selectedPart < 1) selectedPart = totalParts;
+    } 
+    else if (button_is_pressed(btn4)) return;
+    else if (button_is_pressed(btn3)){
+      switch (selectedPart){
+        case 1:
+          activateOutput(Func1);
+          delay(500);
+          continue;
+        case 2:
+          activateOutput(Func2, 1000);
+          continue;
+        case 3:
+          activateOutput(LED_BUILTIN, 100);
+          continue;
+        case 4:
+          continue;
+      }
+    }
+  }
+}
+
+void colourPicker(){
+  int r = 0, g = 0, b = 0;
   int sel = 0;
   while (true){
     pixel.setPixelColor(0, pixel.Color(r, g, b));
     pixel.show();
     delay(30);
 
-    if (button_is_pressed(btn1)){ sel = (sel + 1) % 3; delay(160);}
-    else if (button_is_pressed(btn2)){ sel = (sel + 2) % 3; delay(160);}
+    if (button_is_pressed(btn1)){sel = (sel + 1) % 3; delay(150);}
+    else if (button_is_pressed(btn2)){sel = (sel + 2) % 3; delay(150);}
     else if (button_is_pressed(btn3)){
       if (sel == 0) r = (r + 32) % 256;
       else if (sel == 1) g = (g + 32) % 256;
@@ -170,11 +222,8 @@ void colorPicker(){
       delay(130);
     }
     else if (button_is_pressed(btn4)){
-      blinkColor(pixel.Color(r,g,b), 2, 250, 100);
-      pixel.setPixelColor(0, pixel.Color(r,g,b));
+      pixel.clear(); 
       pixel.show();
-      delay(1500);
-      pixel.clear(); pixel.show();
       return;
     }
   }
@@ -252,18 +301,19 @@ void bomb(){
 void loop(){
   if (button_is_pressed(btn2)){
     selectedFunction++;
-    indicateFunction(selectedFunction);
+    showFunction(selectedFunction);
     if (selectedFunction > totalFunctions) selectedFunction = 1;
     delay(150);
-  } else if (button_is_pressed(btn1)){
+  } 
+  else if (button_is_pressed(btn1)){
       selectedFunction--;
-      indicateFunction(selectedFunction);
+      showFunction(selectedFunction);
     if (selectedFunction < 1) selectedFunction = totalFunctions;
     delay(150);
   } else if (button_is_pressed(btn3)){
     switch (selectedFunction){
       case 1: outputs(); break;
-      case 2: colorPicker(); break;
+      case 2: colourPicker(); break;
       case 3: bomb(); break;
       case 4: randomInt(); break;
       case 5: goToSleep(); break;
