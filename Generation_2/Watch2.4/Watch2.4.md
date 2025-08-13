@@ -1,3 +1,5 @@
+*SPDX-License-Identifier: CC-BY-NC-SA-4.0*
+
 # Watch 2.4
 
 Watch 2.4 is the largest and most feature-rich device among the Generation 2 watches. It was designed to squeeze as many functions as could be packed into a single wearable, without much regard for size constraints.

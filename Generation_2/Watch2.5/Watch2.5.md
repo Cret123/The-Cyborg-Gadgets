@@ -1,3 +1,5 @@
+*SPDX-License-Identifier: CC-BY-NC-SA-4.0*
+
 # Watch 2.5
 
 Watch 2.5 is designed for durability and modularity. Its unique construction uses magnets to connect the housing, allowing the device to be easily taken apart, reconfigured, or repaired. This design makes Watch 2.5 one of the most resilient of the Gen 2 series.

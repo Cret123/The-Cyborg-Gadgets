@@ -1,3 +1,5 @@
+*SPDX-License-Identifier: CC-BY-NC-SA-4.0*
+
 # Watch 2.1
 
 Watch 2.1 is the smallest gadget of the second generation. Despite its small size, it manages to include several of the most useful features.

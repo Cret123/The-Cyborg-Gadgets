@@ -1,3 +1,5 @@
+*SPDX-License-Identifier: CC-BY-NC-SA-4.0*
+
 # Watch 2.0
 
 Watch 2.0 is the oldest functional Generation 2 watch and is noted for its stability and reliability, having been in use longer than any other Gen 2 device.

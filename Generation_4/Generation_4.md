@@ -1,6 +1,8 @@
+*SPDX-License-Identifier: CC-BY-NC-SA-4.0*
+
 # Generation 4
 
-Fourth generation watches have made a significant leap forward, being the first to incorporate an MCU (microcontroller unit). The most common MCU is the Arduino Pro Mini for its compact size and price. However, specialized models may use other Arduino variants.
+Fourth generation watches make a significant leap forward, being the first to incorporate an MCU (microcontroller unit). The most common MCU used is the Arduino Pro Mini for its compact size and price. However, specialized models may use other Arduino variants.
 
 ## Devices
 

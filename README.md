@@ -1,3 +1,5 @@
+***SPDX-License-Identifier:*** *CC-BY-NC-SA-4.0*
+
 # The Cyborg Gadgets
 
 A project to develop non-invasive, painless body enhancements. 
@@ -25,6 +27,7 @@ The gadgets are all labeled, as seen in the example below:
     - Watches
     - Badges
     - Gloves
+    - Necklaces
     - Bags
 
-- **Induvidual number**: Within each generation and gadget type, every device is given a unique number, typically assigned in order of production.
+- **Induvidual number**: Within each generation and gadget type, every device is given a unique number, typically assigned in order of production. 

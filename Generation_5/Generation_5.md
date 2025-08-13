@@ -1,6 +1,8 @@
+*SPDX-License-Identifier: CC-BY-NC-SA-4.0*
+
 # Generation 5
 
-Fifth generation watches still keep a similar structure but switch from AVR microcontrollers to ESP32 based boards, primarily the ESP32-C3. This change takes advantage of the built-in Wi-Fi and Bluetooth, better processing power and an even smaller board.
+Fifth generation watches still keep a similar structure to the fourth generation but switch from AVR microcontrollers to ESP32 based boards, primarily the ESP32-C3. This change takes advantage of the built-in Wi-Fi and Bluetooth, better processing power and an even smaller board.
 
 ## Devices
 

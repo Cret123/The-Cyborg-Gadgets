@@ -1,6 +1,8 @@
+*SPDX-License-Identifier: CC-BY-NC-SA-4.0*
+
 # Watch 2.3 - Destroyed
 
-Watch 2.3 is now damaged beyond repair, but during its operational lifetime, it was notable for being the easiest generation 2 watch to repair or modify. Its layout was intentionally designed for accessibility.
+Watch 2.3 is now damaged beyond repair, but during its operational lifetime, it was notable for being the easiest generation 2 watch to repair or modify. Its layout was intentionally designed to be taken apart easily.
 
 ## Functions
 
