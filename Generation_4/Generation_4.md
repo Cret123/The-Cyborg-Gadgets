@@ -6,8 +6,8 @@ Fourth generation watches make a significant leap forward, being the first to in
 
 ## Devices
 
-- [Watch 4.0](./Watch4.0/Watch4.0.ino) was the first 4th generation watch to be built. It uses a neopixel for communication, flashing various colours and sequences for various meanings. 
-- [Watch 4.1](./Watch4.1/Watch4.1.ino) made use of technology from its predecessor generation, an SA56 display. While this improves communication, the amount of pins required to use the display limits other potential features.
+- [Watch 4.0](./Watch4.0/Watch4.0.ino) was the first 4th generation watch to be built. It uses the inbuilt LED to flash sequences at the user.
+- [Watch 4.1](./Watch4.1/Watch4.1.ino) uses a neopixel for communication, flashing various colours and sequences for various meanings. 
 - [Watch 4.2](./Watch4.2/Watch4.2.ino) shifted to a more advanced display, an SSD1306 12C OLED screen.
 - [Watch 4.3](./Watch4.3/Watch4.3.ino) is the first fully independent gadget, featuring an RTC chip to become a fully functional watch.
 - [Watch 4.4](./Watch4.4/) utilizes an nRF24L01 transiever module to enable remote control, which helps increase pins, proccessing power and reduces the risk of potential theft.

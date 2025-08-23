@@ -1,0 +1,360 @@
+// Watch 4.2: Initial OLED display watch
+
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
+#include <avr/sleep.h>
+#include <avr/power.h>
+#include <avr/interrupt.h>
+#include <Wire.h>
+#include <ctype.h>
+#include <math.h>
+
+#define SCREEN_WIDTH 128
+#define SCREEN_HEIGHT 32
+#define OLED_RESET -1
+
+#define totalFunctions 4
+#define totalSensors 3
+
+Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
+
+unsigned long lastActivityTime = 0;
+const unsigned long inactivityPeriod = 30000;
+
+int selectedFunction = 1;
+int selectedSensor = 1;
+
+const byte btn1 = 2;
+const byte btn2 = 3;
+const byte btn3 = 4;
+const byte btn4 = 5;
+
+const int TRIG_PIN   = 9;
+const int ECHO_PIN   = 8;
+
+const byte LED = 7;
+
+volatile bool wakeup = false;
+
+const char *Functions[] = {"Torch", "Sensors", "Random Int", "Sleep Mode"};
+const char *Sensors[] = {"Temp", "Light", "Sonar"};
+
+void setup(){
+  pinMode(btn1, INPUT_PULLUP);
+  pinMode(btn2, INPUT_PULLUP);
+  pinMode(btn3, INPUT_PULLUP);
+  pinMode(btn4, INPUT_PULLUP);
+  pinMode(TRIG_PIN, OUTPUT);
+  pinMode(ECHO_PIN, INPUT);
+  pinMode(LED, OUTPUT);
+  randomSeed(analogRead(1));
+
+  if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)){
+  while (true){
+    digitalWrite(LED_BUILTIN, HIGH); delay(50);
+    digitalWrite(LED_BUILTIN, LOW); delay(200);
+    }
+  }
+  display.clearDisplay();
+  display.setTextSize(1);
+  display.setTextColor(SSD1306_WHITE);
+  display.setCursor(5, 0);
+  display.print("Watch 5,");
+  display.setCursor(30, 20);
+  display.print("Gen 4");
+  display.display();
+
+  delay(100);
+
+  for (int i = 0; i < 200; i++){
+    delay(20);
+    digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
+    if (button_is_pressed(btn1)){
+      digitalWrite(LED_BUILTIN, LOW);
+      break;
+    }
+    if (button_is_pressed(btn4)){
+      digitalWrite(LED, HIGH);
+    } 
+    else if (button_is_pressed(btn3)){
+    continue;
+    }
+  }
+}
+/*
+void printText(char *text, int x, int y){
+  int spacing = 10; // Pixels between characters (adjust for your font size)
+
+  for (int i = 0; i < text.length(); i++) {
+      display.setCursor(x, y + i * spacing);
+      display.print(text[i]);
+  }
+}
+*/
+bool button_is_pressed(const byte btn){
+    unsigned long now = millis();
+
+    if (now - lastActivityTime > inactivityPeriod) {
+        display.clearDisplay();
+        display.display();
+        goToSleep();
+        lastActivityTime = millis();
+        // Ensure interrupt does not trigger immediately
+        while (button_is_pressed(btn3));
+        return false;
+    }
+
+    if (digitalRead(btn) == LOW) {
+        delay(50);
+        lastActivityTime = millis();
+        return true;
+    }
+    return false;
+}
+
+void(* reset) (void) = 0;
+
+void wakeUp(){
+    wakeup = true;
+}
+
+void goToSleep(){
+
+    display.ssd1306_command(SSD1306_DISPLAYOFF);
+
+    ADCSRA &= ~(1 << ADEN);
+    sleep_bod_disable();
+
+    wakeup = false;
+    attachInterrupt(digitalPinToInterrupt(btn3), wakeUp, FALLING);
+
+    set_sleep_mode(SLEEP_MODE_PWR_DOWN);
+    sleep_enable();
+    sleep_mode();
+
+    sleep_disable();
+    detachInterrupt(digitalPinToInterrupt(btn3));
+ 
+    ADCSRA |= (1 << ADEN);
+    display.ssd1306_command(SSD1306_DISPLAYON);
+
+}
+
+void torch(){
+  bool blink = false;
+  bool keepOn = false;
+  int blinkTime = 500;
+
+  while (true){
+    display.clearDisplay();
+    display.setTextSize(1);
+    display.setTextColor(SSD1306_WHITE);
+    
+    display.setTextSize(2);
+    display.setCursor(10, 15);
+    display.print("State: ");
+    display.print(digitalRead(LED));
+    display.display();
+    
+    if (!blink) delay(50);
+    if (keepOn){
+      digitalWrite(LED, HIGH);
+    } 
+    else if (blink){
+      digitalWrite(LED, !digitalRead(LED));
+      delay(blinkTime / 2);
+    } 
+    else{
+      if (button_is_pressed(btn1)) digitalWrite(LED, HIGH);
+      else digitalWrite(LED, LOW);
+    }
+
+    if (button_is_pressed(btn2)){
+      keepOn = !keepOn;
+      if (keepOn) blink = false;
+    } 
+    else if (button_is_pressed(btn3)){
+      blink = !blink;
+      if (blink) keepOn = false;
+    }
+    else if (button_is_pressed(btn4)){
+      return;
+    delay(200);
+    }
+  }
+}
+
+void temp(){
+  float tempValC;
+  float tempValF;
+  while (!button_is_pressed(btn4)){
+
+    tempValC = 0;
+    tempValF = 0;
+
+    display.setTextSize(1);
+    display.setCursor(0, 5);
+    display.print(("Temperature: %.1f°C", tempValC));
+    display.setCursor(0, 20);
+    display.print(tempValF);
+    display.display();
+    }
+}
+
+void light(){
+  int lightVal;
+  while (!button_is_pressed(btn4)){
+
+    lightVal = 0;
+
+    display.setTextSize(1);
+    display.setCursor(0, 5);
+    display.setCursor(0, 20);
+    display.print(("Light: %d%%", int(round(lightVal / 10.24))));
+    display.display();
+    }
+}
+
+void ultraSound(){
+  long duration;
+  float distance;
+  while (!button_is_pressed(btn4)){
+
+    digitalWrite(TRIG_PIN, HIGH);
+    delayMicroseconds(10);
+    digitalWrite(TRIG_PIN, LOW);
+
+    duration = pulseIn(ECHO_PIN, HIGH);
+    distance = 0.017 * duration;
+
+    display.setTextSize(1);
+    display.setCursor(0,15);
+    display.print(("Distance: %.1fcm", distance));
+
+    int barWidth = 128;
+    float maxDistance = 500.0;
+    int filled = barWidth - min(barWidth, int((distance / maxDistance) * barWidth));
+    display.fillRect(0, 30, filled, 10, WHITE);
+
+    display.display();
+  }
+}
+
+
+void sensors(void){
+  delay(50);
+  while (true){
+    display.setTextSize(2);
+    display.setCursor(10, 5);
+    display.print(Sensors[selectedSensor-1]);
+    display.display();
+
+    delay(50);
+
+    if (button_is_pressed(btn2)){
+      selectedSensor++;
+      if (selectedSensor > totalSensors) selectedSensor = 1;
+    } 
+    else if (button_is_pressed(btn1)){
+      selectedSensor--;
+      if (selectedSensor < 1) selectedSensor = totalSensors;
+    } 
+    else if (button_is_pressed(btn4)) return;
+    else if (button_is_pressed(btn3)){
+      switch (selectedSensor){
+        case 1:
+          temp();
+          continue;
+        case 2:
+          light();
+          continue;
+        case 3:
+          ultraSound();
+          continue;
+      }
+    }
+  }
+}
+
+void randomInt(){
+  int range = 1;
+  while (true){
+    display.clearDisplay();
+    display.setTextSize(2);
+    display.setCursor(0, 0);
+    display.println("Random Int");
+    display.setCursor(30, 25);
+    display.print("Range:");
+    display.setCursor(30, 45);
+    display.print(("0 - "));
+    display.print(range);
+    display.display();
+    delay(100);
+    if (button_is_pressed(btn1)){
+      range += 10;
+      delay(200);
+    } 
+    else if (button_is_pressed(btn2)){
+      range--;
+      delay(200);
+    } 
+    else if (button_is_pressed(btn3)){
+      int randNumber = random(0, range + 1);
+      display.clearDisplay();
+      display.setTextSize(4);
+      display.setCursor(10, 25);
+      display.print(randNumber);
+      display.display();
+      delay(2000);
+    } 
+    else if (button_is_pressed(btn4)){
+      return;
+    }
+  }
+}
+
+
+void loop(){
+  display.clearDisplay();
+  display.setTextSize(2);
+  display.setCursor(0, 5);
+
+  display.print(Functions[selectedFunction-1]);
+
+  display.display();
+
+  delay(10000);
+
+  if (button_is_pressed(btn2)){
+    selectedFunction++;
+    if (selectedFunction > totalFunctions) selectedFunction = 1;
+  } 
+  else if (button_is_pressed(btn1)){
+    selectedFunction--;
+    if (selectedFunction < 1){
+      selectedFunction = totalFunctions;
+    }
+  } 
+  else if (button_is_pressed(btn3)){
+    switch (selectedFunction){
+      case 1:
+        torch();
+        break;
+      case 2:
+        sensors();
+        break;
+      case 3:
+        randomInt();
+      case 4:
+        display.clearDisplay();
+        display.display();
+        // Ensure interrupt does not trigger immediately
+        while (button_is_pressed(btn3));
+        goToSleep();
+        break;
+    }
+  }
+  else if (button_is_pressed(btn4)){
+    reset();
+  }
+}
