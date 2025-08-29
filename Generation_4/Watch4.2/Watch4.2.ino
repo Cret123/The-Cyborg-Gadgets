@@ -181,6 +181,7 @@ void activateFunc(const byte func, int blinkTime = 500){
     } 
     else if (button_is_pressed(btn3)){
       blink = !blink;
+      lastActivityTime = millis(); // prevent sleep during blink
       if (blink) keepOn = false;
     }
     else if (button_is_pressed(btn4)){

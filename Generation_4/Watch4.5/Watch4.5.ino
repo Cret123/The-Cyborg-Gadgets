@@ -2,6 +2,8 @@
 
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
+#include <DallasTemperature.h>
+#include <OneWire.h>
 #include <avr/sleep.h>
 #include <avr/power.h>
 #include <avr/interrupt.h>
@@ -13,10 +15,16 @@
 #define SCREEN_HEIGHT 32
 #define OLED_RESET -1
 
+#define TEMP_PIN 10
+
 #define totalFunctions 4
 #define totalSensors 3
 
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
+
+OneWire oneWire(TEMP_PIN);
+
+DallasTemperature tempSensor(&oneWire);
 
 unsigned long lastActivityTime = 0;
 const unsigned long inactivityPeriod = 30000;
@@ -29,8 +37,10 @@ const byte btn2 = 3;
 const byte btn3 = 4;
 const byte btn4 = 5;
 
-const int TRIG_PIN   = 9;
-const int ECHO_PIN   = 8;
+const byte TRIG_PIN = 9;
+const byte ECHO_PIN = 8;
+
+const byte lightPin = A0;
 
 const byte LED = 7;
 
@@ -46,6 +56,7 @@ void setup(){
   pinMode(btn4, INPUT_PULLUP);
   pinMode(TRIG_PIN, OUTPUT);
   pinMode(ECHO_PIN, INPUT);
+  pinMode(lightPin, INPUT);
   pinMode(LED, OUTPUT);
   randomSeed(analogRead(1));
 
@@ -53,6 +64,13 @@ void setup(){
   while (true){
     digitalWrite(LED_BUILTIN, HIGH); delay(50);
     digitalWrite(LED_BUILTIN, LOW); delay(200);
+    }
+  }
+
+  if (!tempSensor.begin()){
+    while (true){
+      digitalWrite(LED_BUILTIN, HIGH); delay(200);
+      digitalWrite(LED_BUILTIN, LOW); delay(200);
     }
   }
   display.clearDisplay();
@@ -65,7 +83,7 @@ void setup(){
   display.display();
 
   delay(100);
-
+  // shortcuts:
   for (int i = 0; i < 200; i++){
     delay(20);
     digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
@@ -77,20 +95,11 @@ void setup(){
       digitalWrite(LED, HIGH);
     } 
     else if (button_is_pressed(btn3)){
-    continue;
+      continue;
     }
   }
 }
-/*
-void printText(char *text, int x, int y){
-  int spacing = 10; // Pixels between characters (adjust for your font size)
 
-  for (int i = 0; i < text.length(); i++) {
-      display.setCursor(x, y + i * spacing);
-      display.print(text[i]);
-  }
-}
-*/
 bool button_is_pressed(const byte btn){
     unsigned long now = millis();
 
@@ -154,6 +163,12 @@ void torch(){
     display.setCursor(10, 15);
     display.print("State: ");
     display.print(digitalRead(LED));
+    }
+  }
+  display.clearDisplay();
+  display.setTextSize(1);
+  display.setTextColor(SSD1306_WHITE);
+…    }
     display.display();
     
     if (!blink) delay(50);
@@ -186,17 +201,23 @@ void torch(){
 
 void temp(){
   float tempValC;
+  float tempValK;
   float tempValF;
   while (!button_is_pressed(btn4)){
 
-    tempValC = 0;
-    tempValF = 0;
+    tempSensor.requestTemperatures();
 
-    display.setTextSize(1);
+    tempValC = tempSensor.getTempCByIndex(0);
+    tempValK = tempSensor.getTempCByIndex(0) - 273.15;
+    tempValF = tempSensor.getTempCByIndex(0) * 9 / 5 + 32;
+
+    display.setTextSize(2);
     display.setCursor(0, 5);
-    display.print(("Temperature: %.1f°C", tempValC));
-    display.setCursor(0, 20);
-    display.print(tempValF);
+    display.print(("%.2f°C", tempValC));
+    display.setCursor(64, 5);
+    display.print(("%.1f°K", tempValK));
+    display.setCursor(64, 20);
+    display.print(("%.1f°F", tempValF));
     display.display();
     }
 }
@@ -205,12 +226,11 @@ void light(){
   int lightVal;
   while (!button_is_pressed(btn4)){
 
-    lightVal = 0;
+    lightVal = analogRead(lightPin);;
 
-    display.setTextSize(1);
-    display.setCursor(0, 5);
-    display.setCursor(0, 20);
-    display.print(("Light: %d%%", int(round(lightVal / 10.24))));
+    display.setTextSize(2);
+    display.setCursor(0, 10);
+    display.print(("Light: %d", lightVal));
     display.display();
     }
 }

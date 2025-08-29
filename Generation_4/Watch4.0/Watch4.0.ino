@@ -4,20 +4,14 @@
 #include <avr/power.h>
 #include <avr/interrupt.h>
 
-unsigned long lastActivityTime = 0;
-const unsigned long inactivityPeriod = 30000;
-
-const byte btn1 = 4;
-const byte btn2 = 7;
-const byte btn3 = 9;
+const byte btn1 = 5;
+const byte btn2 = 4;
+const byte btn3 = 3;
 const byte btn4 = 2;
 
-const byte Func1 = 3;
-const byte Func2 = 6;
-const byte Func3 = 8;
-
-int totalParts = 4;
-int selectedPart = 1;
+const byte Func1 = 10;
+const byte Func2 = 11;
+const byte Func3 = 12;
 
 volatile bool wakeup = false;
 
@@ -30,31 +24,15 @@ void setup() {
   pinMode(Func2, OUTPUT);
   pinMode(Func3, OUTPUT);
   randomSeed(analogRead(1));
-  pinMode(LED_BUILTIN, OUTPUT);
-  digitalWrite(LED_BUILTIN, HIGH);
 }
 
 bool button_is_pressed(const byte btn) {
-  unsigned long now = millis();
-
-  if (now - lastActivityTime > inactivityPeriod) {
-    goToSleep();
-    lastActivityTime = millis();
-    // Ensure interrupt does not trigger immediately
-    while (button_is_pressed(btn3))
-      ;
-    return false;
-  }
-
   if (digitalRead(btn) == LOW) {
     delay(50);
-    lastActivityTime = millis();
     return true;
   }
   return false;
 }
-
-void (*reset)(void) = 0;
 
 void wakeUp() {
   wakeup = true;
@@ -62,52 +40,56 @@ void wakeUp() {
 
 void goToSleep() {
 
+  digitalWrite(LED_BUILTIN, LOW);
+
   ADCSRA &= ~(1 << ADEN);
   sleep_bod_disable();
 
   wakeup = false;
-  attachInterrupt(digitalPinToInterrupt(btn3), wakeUp, FALLING);
+  attachInterrupt(digitalPinToInterrupt(btn4), wakeUp, FALLING);
 
   set_sleep_mode(SLEEP_MODE_PWR_DOWN);
   sleep_enable();
   sleep_mode();
 
   sleep_disable();
-  detachInterrupt(digitalPinToInterrupt(btn3));
+  detachInterrupt(digitalPinToInterrupt(btn4));
 
   ADCSRA |= (1 << ADEN);
+  while(button_is_pressed(btn4));
 }
 
 void activateFunc(const byte func, int blinkTime = 500) {
   bool blink = false;
   bool keepOn = false;
+  delay(500);
   while (true) {
-    digitalWrite(LED_BUILTIN, digitalRead(func));
-    if (button_is_pressed(btn1) or keepOn) {
+    if (button_is_pressed(btn1) || keepOn) {
       digitalWrite(func, HIGH);
       delay(50);
-    } else
+    } else {
       digitalWrite(func, LOW);
+    }
 
     if (blink) {
       digitalWrite(func, !digitalRead(func));
       delay(blinkTime);
     }
+    digitalWrite(LED_BUILTIN, digitalRead(func));
 
     if (button_is_pressed(btn2))
-      keepOn != keepOn;
+      keepOn = !keepOn;
 
     else if (button_is_pressed(btn3))
       blink = !blink;
 
-    else if (button_is_pressed(btn4)) {
+    else if (button_is_pressed(btn4))
       return;
-    }
   }
 }
 
 void watchFuncs(void) {
-  delay(50);
+  delay(500);
   while (true) {
     if (button_is_pressed(btn1)) {
       activateFunc(Func1);
@@ -128,42 +110,96 @@ void watchFuncs(void) {
 }
 
 void randomInt() {
-  static int clickCount = 0;
-  static int prevBtn3State = HIGH;
-  static unsigned long lastDebounceTime = 0;
-  const unsigned long debounceDelay = 50;
-  if (button_is_pressed(btn3)) {
-    if (prevBtn3State == HIGH && (millis() - lastDebounceTime) > debounceDelay) {
-      clickCount++;
-      lastDebounceTime = millis();
-    }
-    prevBtn3State = LOW;
-  } else {
-    prevBtn3State = HIGH;
-  }
-  if (button_is_pressed(btn1)) {
-    int range = clickCount;
-    int randNumber = random(0, range + 1);
-    for (int i = 0; i < randNumber; i++) {
-      digitalWrite(LED_BUILTIN, LOW);
-      delay(250);
+  digitalWrite(LED_BUILTIN, LOW);
+  int range = 1;
+  while(true){
+    if (button_is_pressed(btn2)) {
+      range++;
       digitalWrite(LED_BUILTIN, HIGH);
-      delay(250);
+      delay(100);
+      digitalWrite(LED_BUILTIN, LOW);
+    }
+    if (button_is_pressed(btn3)) {
+      range--;
+      digitalWrite(LED_BUILTIN, HIGH);
+      delay(100);
+      digitalWrite(LED_BUILTIN, LOW);
+    }
+    if (button_is_pressed(btn4)) {
+      int randNumber = random(0, range);
+      for (int i = 0; i < randNumber; i++) {
+        digitalWrite(LED_BUILTIN, LOW);
+        delay(500);
+        digitalWrite(LED_BUILTIN, HIGH);
+        delay(500);
+      }
+      return;
     }
   }
 }
 
-void loop() {
-  digitalWrite(LED_BUILTIN, HIGH);
-  if (button_is_pressed(btn4)) {
-    while (button_is_pressed(btn4))
-      ;
-    goToSleep();
-  } else if (button_is_pressed(btn1)) {
-    watchFuncs();
-  } else if (button_is_pressed(btn2)) {
-    randomInt();
-  } else if (button_is_pressed(btn3)) {
-    reset();
+void counter() {
+  int count = 0;
+  unsigned long lastFeedback = 0;
+
+  delay(500);
+
+  while (true) {
+
+    if (button_is_pressed(btn1)) {
+      while(button_is_pressed(btn1)){}
+      count += 10;
+      for (int i = 0; i < 2; i++) {
+        digitalWrite(LED_BUILTIN, HIGH);
+        delay(100);
+        digitalWrite(LED_BUILTIN, LOW);
+        delay(500);
+      }
+    }
+
+    if (button_is_pressed(btn2)) {
+      count += 1;
+      digitalWrite(LED_BUILTIN, HIGH);
+      delay(100);
+      digitalWrite(LED_BUILTIN, LOW);
+      delay(500);
+    }
+
+    if (button_is_pressed(btn3)) {
+      while (button_is_pressed(btn3)){}
+      break;
+    }
+
+    if (button_is_pressed(btn4)) return;
   }
+
+  delay(300);
+  for (int i = 0; i < count; i++) {
+    digitalWrite(LED_BUILTIN, HIGH);
+    delay(100);
+    digitalWrite(LED_BUILTIN, LOW);
+    delay(250);
+  }
+  delay(500);
+}
+
+void loop() {
+  digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
+  if (button_is_pressed(btn4)){
+    while (button_is_pressed(btn4));
+    goToSleep();
+  } 
+  else if (button_is_pressed(btn1)) {
+    while (button_is_pressed(btn1));
+    watchFuncs();
+  } 
+  else if (button_is_pressed(btn2)) {
+    while (button_is_pressed(btn2));
+    randomInt();
+  }
+  else if (button_is_pressed(btn3)) {
+    while(button_is_pressed(btn3));
+    counter();
+  }
+  delay(100);
 }
