@@ -1,4 +1,4 @@
-// Watch 3.5: Watch designed for expeditions. Includes sensors and GPS.
+// Watch 3.7: Designed for expeditions. Includes sensors and GPS.
 
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
@@ -78,9 +78,9 @@ void setup() {
   display.setCursor(7, 0);
   display.print("Wecome to");
   display.setCursor(20, 20);
-  display.print("Watch 5");
+  display.print("Watch 7");
   display.setCursor(30, 50);
-  display.print("Gen 4");
+  display.print("Gen 3");
   display.setTextSize(1);
   display.setCursor(55, 40);
   display.print("of");

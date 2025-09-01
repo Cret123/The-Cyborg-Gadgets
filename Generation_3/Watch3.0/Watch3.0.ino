@@ -1,4 +1,4 @@
-// Initial arduino pro mini watch
+// Initial arduino pro mini watch. Uses blinks to communicate.
 
 #include <avr/sleep.h>
 #include <avr/power.h>
@@ -26,9 +26,12 @@ void setup() {
   randomSeed(analogRead(1));
 }
 
-bool button_is_pressed(const byte btn) {
+bool button_is_pressed(const byte btn, bool onlyOnce = true) {
   if (digitalRead(btn) == LOW) {
     delay(50);
+    if (onlyOnce){
+      while (digitalRead(btn) == LOW){}
+    }
     return true;
   }
   return false;
@@ -56,15 +59,15 @@ void goToSleep() {
   detachInterrupt(digitalPinToInterrupt(btn4));
 
   ADCSRA |= (1 << ADEN);
-  while(button_is_pressed(btn4));
+  
+  if (button_is_pressed(btn4)){}
 }
 
 void activateFunc(const byte func, int blinkTime = 500) {
   bool blink = false;
   bool keepOn = false;
-  delay(500);
   while (true) {
-    if (button_is_pressed(btn1) || keepOn) {
+    if (button_is_pressed(btn1, false) || keepOn) {
       digitalWrite(func, HIGH);
       delay(50);
     } else {
@@ -89,7 +92,6 @@ void activateFunc(const byte func, int blinkTime = 500) {
 }
 
 void watchFuncs(void) {
-  delay(500);
   while (true) {
     if (button_is_pressed(btn1)) {
       activateFunc(Func1);
@@ -113,13 +115,13 @@ void randomInt() {
   digitalWrite(LED_BUILTIN, LOW);
   int range = 1;
   while(true){
-    if (button_is_pressed(btn2)) {
+    if (button_is_pressed(btn1, false)) {
       range++;
       digitalWrite(LED_BUILTIN, HIGH);
       delay(100);
       digitalWrite(LED_BUILTIN, LOW);
     }
-    if (button_is_pressed(btn3)) {
+    if (button_is_pressed(btn2, false)) {
       range--;
       digitalWrite(LED_BUILTIN, HIGH);
       delay(100);
@@ -127,12 +129,14 @@ void randomInt() {
     }
     if (button_is_pressed(btn4)) {
       int randNumber = random(0, range);
+      Serial.println(randNumber);
       for (int i = 0; i < randNumber; i++) {
         digitalWrite(LED_BUILTIN, LOW);
         delay(500);
         digitalWrite(LED_BUILTIN, HIGH);
         delay(500);
       }
+      delay(500);
       return;
     }
   }
@@ -140,66 +144,63 @@ void randomInt() {
 
 void counter() {
   int count = 0;
-  unsigned long lastFeedback = 0;
 
   delay(500);
 
   while (true) {
 
     if (button_is_pressed(btn1)) {
-      while(button_is_pressed(btn1)){}
-      count += 10;
-      for (int i = 0; i < 2; i++) {
-        digitalWrite(LED_BUILTIN, HIGH);
-        delay(100);
-        digitalWrite(LED_BUILTIN, LOW);
-        delay(500);
-      }
-    }
-
-    if (button_is_pressed(btn2)) {
-      count += 1;
+      count++;
       digitalWrite(LED_BUILTIN, HIGH);
       delay(100);
       digitalWrite(LED_BUILTIN, LOW);
-      delay(500);
+      delay(100);
     }
 
-    if (button_is_pressed(btn3)) {
-      while (button_is_pressed(btn3)){}
-      break;
+    else if (button_is_pressed(btn2, false)) {
+      count += 10;
+      digitalWrite(LED_BUILTIN, HIGH);
+      delay(100);
+      digitalWrite(LED_BUILTIN, LOW);
+      delay(100);
     }
 
-    if (button_is_pressed(btn4)) return;
+    else if (button_is_pressed(btn3)) {
+      count--;
+      digitalWrite(LED_BUILTIN, HIGH);
+      delay(100);
+      digitalWrite(LED_BUILTIN, LOW);
+      delay(100);
+    }
+
+    else if (button_is_pressed(btn4)) break;
   }
 
   delay(300);
   for (int i = 0; i < count; i++) {
     digitalWrite(LED_BUILTIN, HIGH);
-    delay(100);
-    digitalWrite(LED_BUILTIN, LOW);
     delay(250);
+    digitalWrite(LED_BUILTIN, LOW);
+    delay(500);
   }
   delay(500);
 }
 
 void loop() {
-  digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
+  digitalWrite(LED_BUILTIN, HIGH);
+  delay(1);
   if (button_is_pressed(btn4)){
-    while (button_is_pressed(btn4));
     goToSleep();
   } 
   else if (button_is_pressed(btn1)) {
-    while (button_is_pressed(btn1));
     watchFuncs();
   } 
   else if (button_is_pressed(btn2)) {
-    while (button_is_pressed(btn2));
     randomInt();
   }
   else if (button_is_pressed(btn3)) {
-    while(button_is_pressed(btn3));
     counter();
   }
-  delay(100);
+  digitalWrite(LED_BUILTIN, LOW);
+  delay(120);
 }

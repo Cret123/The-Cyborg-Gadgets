@@ -1,4 +1,4 @@
-// Watch 4.2: Initial OLED display watch
+// Watch 3.5: Sensor watch
 
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
@@ -79,7 +79,7 @@ void setup(){
   display.setCursor(5, 0);
   display.print("Watch 5,");
   display.setCursor(30, 20);
-  display.print("Gen 4");
+  display.print("Gen 3");
   display.display();
 
   delay(100);

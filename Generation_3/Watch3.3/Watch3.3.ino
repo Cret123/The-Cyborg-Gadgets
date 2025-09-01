@@ -1,4 +1,4 @@
-// Watch 4.3: Uses a DS1302 chip to become an actual watch, rather than a mere extension.
+// Watch 3.3: Uses a DS1302 chip to become an actual watch, rather than a mere extension.
 // Requires 3D printed parts.
 
 #include <Adafruit_GFX.h>
@@ -587,7 +587,7 @@ void setup() {
   display.setCursor(20, 20);
   display.print("Watch 3");
   display.setCursor(30, 50);
-  display.print("Gen 4");
+  display.print("Gen 3");
   display.setTextSize(1);
   display.setCursor(55, 40);
   display.print("of");

@@ -1,4 +1,4 @@
-// Watch 4.0: Initial Generation 4 watch, communicates via neopixel
+// Watch 3.1: communicates via neopixel
 
 #include <Adafruit_NeoPixel.h>
 #include <avr/sleep.h>
