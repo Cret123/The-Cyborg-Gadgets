@@ -21,6 +21,7 @@ Third generation watches make a significant leap forward, being the first to inc
 2. Download or clone this repository.
 3. Install the Arduino IDE.
 3. In the Arduino IDE, install any required libraries for your watch model.
-5. Open the .ino file for your chosen watch model from the Generation_3 directory.
+5. Open the .ino file for your chosen gadget from the Generation_3 directory.
 6. Connect your hardware according to the pin definitions at the top of the chosen file.
+7. Select the appropriate port and arduino (usually a pro mini).
 7. Upload the code to the arduino.
