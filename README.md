@@ -30,6 +30,7 @@ The gadgets are all labeled, as seen in the example below:
     - Badges
     - Gloves
     - Necklaces
+    - Shoes
     - Bags
 
 - **Induvidual number**: Within each generation and gadget type, every device is given a unique number, typically assigned in order of production. 

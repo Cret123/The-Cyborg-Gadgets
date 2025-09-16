@@ -4,6 +4,8 @@ Fourth generation could be considered to be a step down from its prior generatio
 
 ## Devices
 
+- [Watch 4.0](./Watch4.0/Watch4.0.ino) is the first gadget of the 4th generation, using an almost identical program and circuit to [Watch 3.0](../Generation_3/Watch3.0/Watch3.0.ino).
+
 ## Installation
 
 1. Gather the required hardware.

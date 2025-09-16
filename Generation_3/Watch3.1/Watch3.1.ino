@@ -12,9 +12,11 @@ int Wheel(byte WheelPos);
 
 Adafruit_NeoPixel pixel(NUM_NEOPIXEL, NEOPIXEL_PIN, NEO_GRB + NEO_KHZ800);
 
-const byte btn1 = 4;
-const byte btn2 = 2;
-const byte btn3 = 5;
+int brightness = 255;
+
+const byte btn1 = 3;
+const byte btn2 = A1;
+const byte btn3 = A0;
 const byte btn4 = 6;
 
 const byte Func1 = 8;
@@ -47,6 +49,10 @@ void setup(){
   for (int i = 0; i <= 255; i++) {
     pixel.setPixelColor(0, Wheel(i));
     pixel.show();
+    if (button_is_pressed(btn1)) brightness = 1;
+    else if (button_is_pressed(btn2)) brightness = 4;
+    else if (button_is_pressed(btn3)) brightness = 16;
+    else if (button_is_pressed(btn4)) brightness = 64;
     delay(5);
   }
   
@@ -84,13 +90,13 @@ void goToSleep(){
     
     sleep_bod_disable();
     wakeup = false;
-    attachInterrupt(digitalPinToInterrupt(btn2), wakeUp, FALLING);
+    attachInterrupt(digitalPinToInterrupt(btn1), wakeUp, FALLING);
 
     set_sleep_mode(SLEEP_MODE_PWR_DOWN);
     sleep_enable();
 
     sleep_disable();
-    detachInterrupt(digitalPinToInterrupt(btn2));
+    detachInterrupt(digitalPinToInterrupt(btn1));
 }
 
 void blinkColor(uint32_t color, int times, int on_ms = 150, int off_ms = 180){
@@ -119,11 +125,11 @@ int Wheel(int WheelPos) {
 
 void showFunction(int funcNum){
   uint32_t colors[] = {
-    pixel.Color(255, 255, 255),     // 1: Output Control
-    pixel.Color(0, 255, 0),        // 2: Color Picker
-    pixel.Color(255, 0, 0),       // 3: Bomb/Detonate
-    pixel.Color(255, 255, 0),    // 4: Random Int
-    pixel.Color(0, 0, 50)      // 5: Sleep Mode
+    pixel.Color(brightness, brightness, brightness),   // 1: Output Control
+    pixel.Color(0, brightness, 0),                    // 2: Color Picker
+    pixel.Color(brightness, 0, 0),                   // 3: Bomb/Detonate
+    pixel.Color(brightness, brightness, 0),         // 4: Random Int
+    pixel.Color(0, 0, brightness)                  // 5: Sleep Mode
   };
   pixel.clear();
   pixel.setPixelColor(0, colors[funcNum - 1]);
@@ -167,10 +173,10 @@ void activateOutput(const byte func, int blinkTime = 500){
 void outputs(void){
   delay(50);
   int outputColours[] = {
-    pixel.Color(255, 255, 255),    // 1: White LED
-    pixel.Color(255, 0, 0),       // 2: Laser
-    pixel.Color(250, 100, 0),    // 3: Built In LED
-    pixel.Color(0, 255, 0)      // 4: 
+    pixel.Color(brightness, brightness, brightness),    // 1: White LED
+    pixel.Color(brightness, 0, 0),                     // 2: Laser
+    pixel.Color(brightness, brightness, 0),           // 3: Built In LED
+    pixel.Color(0, brightness, 0)                    // 4: 
   };
 
   while (true){
@@ -215,14 +221,14 @@ void colourPicker(){
     pixel.show();
     delay(30);
 
-    if (button_is_pressed(btn1)){sel = (sel + 1) % 3; delay(150);}
-    else if (button_is_pressed(btn2)){
+    if (button_is_pressed(btn3)){sel = (sel + 1) % 3; delay(150);}
+    else if (button_is_pressed(btn1)){
       if (sel == 0) r = (r - 16) % 256;
       else if (sel == 1) g = (g - 16) % 256;
       else b = (b - 16) % 256;
       delay(130);
     }
-    else if (button_is_pressed(btn3)){
+    else if (button_is_pressed(btn2)){
       if (sel == 0) r = (r + 16) % 256;
       else if (sel == 1) g = (g + 16) % 256;
       else b = (b + 16) % 256;
@@ -239,15 +245,15 @@ void colourPicker(){
 void randomInt() {
   int maxVal = 9999;
   while (true) {
-    blinkColor(pixel.Color(255,255,255), 2, 80, 80);
+    blinkColor(pixel.Color(brightness,brightness,brightness), 2, 80, 80);
 
     bool changed = false;
     unsigned long t0 = millis();
     while (millis() - t0 < 1800) {
       if (button_is_pressed(btn1)) { maxVal = (maxVal < 9999) ? maxVal + 1 : 1; changed = true; t0 = millis(); }
       else if (button_is_pressed(btn2)) { maxVal = (maxVal > 1) ? maxVal - 1 : 9999; changed = true; t0 = millis(); }
-      else if (button_is_pressed(btn4)) { return; }
-      else if (button_is_pressed(btn3)) { break; }
+      else if (button_is_pressed(btn4)) return; 
+      else if (button_is_pressed(btn3)) break;
       delay(10);
     }
     if (changed) {
@@ -257,7 +263,7 @@ void randomInt() {
       d[1] = tmp/100;  tmp %= 100;
       d[2] = tmp/10;   tmp %= 10;
       d[3] = tmp;
-      uint32_t colors[4] = { pixel.Color(255,0,0), pixel.Color(255,255,0), pixel.Color(0,255,0), pixel.Color(0,0,255) };
+      uint32_t colors[4] = { pixel.Color(brightness,0,0), pixel.Color(brightness,brightness,0), pixel.Color(0,brightness,0), pixel.Color(0,0,brightness) };
       for (int i=0; i<4; ++i) {
         delay(150);
         blinkColor(colors[i], d[i], 60, 60);
@@ -265,7 +271,6 @@ void randomInt() {
     }
 
     if (button_is_pressed(btn3)) {
-      // Roll random number
       randomSeed(analogRead(1));
       int val = random(0, maxVal+1);
       int d[4];
@@ -273,12 +278,11 @@ void randomInt() {
       d[1] = val/100;  val %= 100;
       d[2] = val/10;   val %= 10;
       d[3] = val;
-      uint32_t colors[4] = { pixel.Color(255,0,0), pixel.Color(0,255,0), pixel.Color(0,0,255), pixel.Color(255,255,0) };
+      uint32_t colors[4] = {pixel.Color(brightness,0,0), pixel.Color(0,brightness,0), pixel.Color(0,0,brightness), pixel.Color(brightness,brightness,0) };
       for (int i=0; i<4; ++i) {
         if (i>0) delay(200);
         blinkColor(colors[i], d[i], 100, 80);
       }
-      // Result pause, then allow reroll or exit
       delay(700);
     }
     if (button_is_pressed(btn4)) return;
