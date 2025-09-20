@@ -2,9 +2,11 @@
 
 # Generation 3
 
-Third generation watches make a significant leap forward, being the first to incorporate an MCU (microcontroller unit). The most common MCU used is the Arduino Pro Mini for its compact size and price. However, certain specialized models may utilize alternative Arduino variants.
+Third generation watches make a significant leap forward, being the first to incorporate an MCU (microcontroller unit). The most common MCU used is the Arduino Pro Mini for its compact size and low price. However, certain specialized models may utilize alternative Arduino variants.
 
 ## Devices
+
+### Watches
 
 - [Watch 3.0](./Watch3.0/Watch3.0.ino) was the first 3th generation watch to be built. It uses the inbuilt LED to flash sequences at the user.
 - [Watch 3.1](./Watch3.1/Watch3.1.ino) uses a neopixel for communication, flashing various colours and sequences for various meanings. 

@@ -1,4 +1,4 @@
-// Watch 4.0: Initial Gen 4 watch, uses blinks to communicate.
+// Watch 4.0: Initial Gen 4 watch, uses blinks to communicate. Chip is an ATTiny 84a.
 
 #include <avr/sleep.h>
 #include <avr/power.h>
